@@ -9,7 +9,7 @@ export type User = {
   email: string;
   password: string;
   role: string;
-  active: bool;
+  active: boolean;
 };
 
 export type Gym = {

@@ -9,7 +9,7 @@ import { AuthError } from 'next-auth';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
  
-export async function getUserByEmail(email: string): Promise<User | undefined> {
+export default async function getUserByEmail(email: string): Promise<User | undefined> {
   try {
     const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
     return user.rows[0];
@@ -21,7 +21,7 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
 
 const RegisterCoachFormSchema = z.object({ 
   email: z.string().email({
-    invalid_type_error: 'Not a valid email.',
+    message: 'Not a valid email.',
   }),
   password: z.string().min(6, { 
     message: 'Password must have at least 6 characters.' 
