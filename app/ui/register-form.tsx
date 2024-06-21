@@ -11,11 +11,23 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/button';
 import { useFormState, useFormStatus } from 'react-dom';
-import { registerCoach } from '@/app/lib/actions';
+import { registerCoach, RegisterCoachFormState } from '@/app/lib/actions';
  
 export default function RegisterForm() {
-  const [formState, formAction] = useFormState(registerCoach, { /* initialState is empty */ });
- 
+  const [formState, formAction] = useFormState(registerCoachIfPasswordRepeatIsValid, { /* initialState is empty */ });
+
+  async function registerCoachIfPasswordRepeatIsValid(prevState: RegisterCoachFormState, formData: FormData) {
+    if (formData.get('password') == formData.get('passwordRepeat')) {
+      return registerCoach(prevState, formData);  
+    }
+    else {
+      return {
+        errors: { passwordRepeat: ['Password is not the same'] },
+        message: 'Form data for new coach is not valid.',
+      };
+    }
+  };
+
   return (
     <form action={formAction} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
@@ -35,7 +47,7 @@ export default function RegisterForm() {
               id="gymName"
               name="gymName"
               placeholder="Enter the name of your gym"
-              // required
+              required
               aria-describedby="gymName-error"
             />
             <HomeIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -93,7 +105,7 @@ export default function RegisterForm() {
                 name="password"
                 placeholder="Enter password"
                 required
-                // minLength={6}
+                minLength={6}
                 aria-describedby="password-error"
               />
               <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -107,27 +119,34 @@ export default function RegisterForm() {
                 ))}
             </div>
           </div>
-          {/*<div className="mt-4">
+          <div className="mt-4">
             <label
               className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="password"
+              htmlFor="password-repeat"
             >
               Repeat password
             </label>
             <div className="relative">
               <input
                 className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                id="password"
+                id="passwordRepeat"
                 type="password"
-                name="password"
-                placeholder="Enter password"
+                name="passwordRepeat"
+                placeholder="Repeat password"
                 required
-                minLength={6}
                 aria-describedby="password-repeat-error"
               />
               <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
-          </div>*/}
+            <div id="passwordRepeat-error" aria-live="polite" aria-atomic="true">
+              {formState.errors?.passwordRepeat &&
+                formState.errors.passwordRepeat.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
+            </div>
+          </div>
         </div>
         <RegisterButton />        
         <div
@@ -135,7 +154,7 @@ export default function RegisterForm() {
           aria-live="polite"
           aria-atomic="true"
         >
-          {!formState.errors && (
+          {formState.message && !formState.errors && (
             <>
               <UserCircleIcon className="h-5 w-5 text-green-500" />
               <p className="text-sm text-green-500">{formState.message}</p>

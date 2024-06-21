@@ -35,6 +35,7 @@ export type RegisterCoachFormState = {
   errors?: {
     email?: string[];
     password?: string[];
+    passwordRepeat?: string[];
     gymName?: string[];
   };
   message?: string | null;
