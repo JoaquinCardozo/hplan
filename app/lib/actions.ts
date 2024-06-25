@@ -20,23 +20,27 @@ export default async function getUserByEmail(email: string): Promise<User | unde
 }
 
 const RegisterCoachFormSchema = z.object({ 
+  gymName: z.string().min(1, {
+    message: 'Enter the name of your Gym',
+  }),
+  name: z.string().min(1, {
+    message: 'Enter your name',
+  }),
   email: z.string().email({
     message: 'Not a valid email.',
   }),
   password: z.string().min(6, { 
     message: 'Password must have at least 6 characters.' 
   }),
-  gymName: z.string().min(1, {
-    message: 'Enter the name of your Gym',
-  }),
 });
 
 export type RegisterCoachFormState = {
   errors?: {
+    gymName?: string[];
+    name?: string[];
     email?: string[];
     password?: string[];
     passwordRepeat?: string[];
-    gymName?: string[];
   };
   message?: string | null;
 };
@@ -46,9 +50,10 @@ export async function registerCoach(prevState: RegisterCoachFormState, formData:
   
   try {
     const validatedFormData = RegisterCoachFormSchema.safeParse({
+      gymName: formData.get('gymName'),
+      name: formData.get('name'),
       email: formData.get('email'),
       password: formData.get('password'),
-      gymName: formData.get('gymName'),
     });
     if (!validatedFormData.success) {
       return {
@@ -56,7 +61,7 @@ export async function registerCoach(prevState: RegisterCoachFormState, formData:
         message: 'Form data for new coach is not valid.',
       };
     }
-    const { email, password, gymName } = validatedFormData.data;
+    const { name, email, password, gymName } = validatedFormData.data;
 
     const existingUser = await getUserByEmail(email);
     if (existingUser) {
@@ -73,7 +78,7 @@ export async function registerCoach(prevState: RegisterCoachFormState, formData:
 
     const newUserQuery = await client.sql`
       INSERT INTO users (email, name, password, role, active)
-      VALUES (${email}, 'pepe', ${hashedPassword}, 'coach', TRUE)
+      VALUES (${email}, ${name}, ${hashedPassword}, 'coach', TRUE)
       RETURNING id, email
     `;
     const newUser = newUserQuery.rows[0];
