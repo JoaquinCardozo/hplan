@@ -110,7 +110,7 @@ export async function registerCoach(prevState: RegisterCoachFormState, formData:
     console.log("GYM CREATED");
     console.log("ASOCIATION CREATED");
 
-    return { message: 'Coach and gym created.' };
+    return { message: 'Coach created.' };
 
   } catch (error) {
     // Transaction rollback
@@ -118,6 +118,105 @@ export async function registerCoach(prevState: RegisterCoachFormState, formData:
 
     console.error('Error creating coach:', error);
     throw new Error('Error creating coach.');
+  }
+}
+
+const RegisterAthleteFormSchema = z.object({ 
+  gymName: z.string().min(1, {
+    message: 'Enter the name of your Gym',
+  }),
+  name: z.string().min(1, {
+    message: 'Enter your name',
+  }),
+  email: z.string().email({
+    message: 'Not a valid email.',
+  }),
+  password: z.string().min(6, { 
+    message: 'Password must have at least 6 characters.' 
+  }),
+});
+
+export type RegisterAthleteFormState = {
+  errors?: {
+    gymName?: string[];
+    name?: string[];
+    email?: string[];
+    password?: string[];
+    passwordRepeat?: string[];
+  };
+  message?: string | null;
+};
+
+export async function registerAthlete(prevState: RegisterAthleteFormState, formData: FormData) {
+  const client = await db.connect();
+  
+  try {
+    const validatedFormData = RegisterAthleteFormSchema.safeParse({
+      gymName: formData.get('gymName'),
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+    });
+    if (!validatedFormData.success) {
+      return {
+        errors: validatedFormData.error.flatten().fieldErrors,
+        message: 'Form data for new athlete is not valid.',
+      };
+    }
+    const { name, email, password, gymName } = validatedFormData.data;
+
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return {
+        errors: { email: ['The user already exists'] },
+        message: 'Form data for new athlete is not valid.',
+      };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds: 10
+
+    // Begin transaction
+    await client.sql`BEGIN`;
+
+    const newUserQuery = await client.sql`
+      INSERT INTO users (email, name, password, role, active)
+      VALUES (${email}, ${name}, ${hashedPassword}, 'athlete', TRUE)
+      RETURNING id, email
+    `;
+    const newUser = newUserQuery.rows[0];
+
+    let gymQuery = await client.sql`
+      SELECT id FROM gyms WHERE name = ${gymName}
+    `;
+    let gymId;
+    if (gymQuery.rows.length === 0) {
+      return {
+        errors: { gymName: ['Gym does not exists'] },
+        message: 'Form data for new athlete is not valid.',
+      };
+    } else {
+      gymId = gymQuery.rows[0].id;
+    }
+    
+    await client.sql`
+      INSERT INTO gyms_athletes (athlete_id, gym_id)
+      VALUES (${newUser.id}, ${gymId})
+    `;
+
+    // Execute transaction
+    await client.sql`COMMIT`;
+
+    console.log("ATHLETE CREATED");
+    console.log("ASOCIATION CREATED");
+
+    return { message: 'Athlete created.' };
+
+  } catch (error) {
+    // Transaction rollback
+    await client.sql`ROLLBACK`;
+
+    console.error('Error creating athlete:', error);
+    throw new Error('Error creating athlete.');
   }
 }
 

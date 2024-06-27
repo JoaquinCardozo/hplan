@@ -11,19 +11,19 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/button';
 import { useFormState, useFormStatus } from 'react-dom';
-import { registerCoach, RegisterCoachFormState } from '@/app/lib/actions';
+import { registerAthlete, RegisterAthleteFormState } from '@/app/lib/actions';
  
-export default function NewGymForm() {
-  const [formState, formAction] = useFormState(registerCoachIfPasswordRepeatIsValid, { /* initialState is empty */ });
+export default function NewAthlleteForm({ gymName }: { gymName: string }) {
+  const [formState, formAction] = useFormState(registerAthleteIfPasswordRepeatIsValid, { /* initialState is empty */ });
 
-  async function registerCoachIfPasswordRepeatIsValid(prevState: RegisterCoachFormState, formData: FormData) {
+  async function registerAthleteIfPasswordRepeatIsValid(prevState: RegisterAthleteFormState, formData: FormData) {
     if (formData.get('password') == formData.get('passwordRepeat')) {
-      return registerCoach(prevState, formData);  
+      return registerAthlete(prevState, formData);  
     }
     else {
       return {
         errors: { passwordRepeat: ['Password is not the same'] },
-        message: 'Form data for new coach is not valid.',
+        message: 'Form data for new athllete is not valid.',
       };
     }
   };
@@ -32,9 +32,9 @@ export default function NewGymForm() {
     <form action={formAction} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
-          Create a new Gym
+          Create a new Athlete for <b>{gymName}</b>
         </h1>
-        <div className="mt-4">
+        <div className="mt-4 hidden">
           <label
             className="mb-3 mt-5 block text-xs font-medium text-gray-900"
             htmlFor="gymName"
@@ -47,8 +47,8 @@ export default function NewGymForm() {
               id="gymName"
               name="gymName"
               placeholder="Enter the name of your gym"
-              required
               aria-describedby="gymName-error"
+              defaultValue={gymName}
             />
             <HomeIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
           </div>
@@ -66,7 +66,7 @@ export default function NewGymForm() {
             className="mb-3 mt-5 block text-xs font-medium text-gray-900"
             htmlFor="name"
           >
-            Coach Name
+            Athlete Name
           </label>
           <div className="relative">
             <input
@@ -94,7 +94,7 @@ export default function NewGymForm() {
               className="mb-3 mt-5 block text-xs font-medium text-gray-900"
               htmlFor="email"
             >
-              Coach Email
+              Athlete Email
             </label>
             <div className="relative">
               <input

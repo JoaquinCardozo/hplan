@@ -1,7 +1,11 @@
 import AcmeLogo from '@/app/ui/acme-logo';
-import NewGymForm from '@/app/ui/registration/new-gym-form';
+import NewAthleteForm from '@/app/ui/registration/new-athlete-form';
  
-export default function NewGymPage() {
+export default function NewAthletePage({ searchParams }: {
+    searchParams?: {
+      gymName?: string;
+    };
+  }) {
   return (
     <main className="flex items-center justify-center md:h-screen">
       <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
@@ -10,7 +14,7 @@ export default function NewGymPage() {
             <AcmeLogo />
           </div>
         </div>
-        <NewGymForm />
+        <NewAthleteForm gymName={searchParams?.gymName || ''}/>
       </div>
     </main>
   );

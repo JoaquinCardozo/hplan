@@ -59,6 +59,24 @@ async function migrate(client) {
     console.error('Error migrating database:', error);
     throw error;
   }
+
+  try {
+    // Create the "gyms_athletes" table if it doesn't exist
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS gyms_athletes (
+        athlete_id UUID NOT NULL,
+        gym_id UUID NOT NULL,
+        PRIMARY KEY (athlete_id, gym_id),
+        FOREIGN KEY (athlete_id) REFERENCES users(id),
+        FOREIGN KEY (gym_id) REFERENCES gyms(id)
+      );
+    `;
+
+    console.log(`Created "gyms_athletes" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
 }
 
 async function main() {
