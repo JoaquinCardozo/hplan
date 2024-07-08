@@ -4,10 +4,10 @@ import { z } from 'zod';
 import { sql, db } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { signIn } from '@/auth';
-import { AuthError } from 'next-auth';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
+import { cookies } from "next/headers";
+
  
 export default async function getUserByEmail(email: string): Promise<User | undefined> {
   try {
@@ -17,6 +17,82 @@ export default async function getUserByEmail(email: string): Promise<User | unde
     console.error('Failed to fetch user:', error);
     throw new Error('Failed to fetch user.');
   }
+}
+
+
+const LoginFormSchema = z.object({ 
+  email: z.string().email({
+    message: 'Not a valid email.',
+  }),
+  password: z.string().min(6, { 
+    message: 'Password must have at least 6 characters.' 
+  }),
+});
+
+export type LoginFormState = {
+  errors?: {
+    email?: string[];
+    password?: string[];
+  };
+  message?: string | null;
+};
+
+export async function login(prevState: LoginFormState, formData: FormData) {
+  const client = await db.connect();
+  
+  try {
+    const validatedFormData = LoginFormSchema.safeParse({
+      email: formData.get('email'),
+      password: formData.get('password'),
+    });
+    if (!validatedFormData.success) {
+      return {
+        errors: validatedFormData.error.flatten().fieldErrors,
+        message: 'Credentials are not valid.',
+      };
+    }
+    const { email, password } = validatedFormData.data;
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return {
+        errors: { email: ['The user does not exists'] },
+        message: 'Credentials are not valid.',
+      };
+    }
+
+    const passwordsMatch = await bcrypt.compare(password, user.password);
+    if (!passwordsMatch) {
+      return {
+        errors: { password: ['Incorrect password'] },
+        message: 'Credentials are not valid.',
+      };
+    }
+
+    cookies().set({
+      name: "user_id", 
+      value: user.id,
+      httpOnly: true,
+      secure: true,
+      maxAge: 60 * 60 * 24 * 7 // one week
+    });
+
+    return { message: 'Logged in.' };
+
+  } catch (error) {
+    console.error('Login error:', error);
+    throw new Error('Invalid credentials.');
+  
+  } finally {
+    client.release();
+  }
+}
+
+export async function logout() {
+  cookies().delete("user_id");
+
+  revalidatePath('/login');
+  redirect('/login');
 }
 
 const RegisterCoachFormSchema = z.object({ 
@@ -223,21 +299,6 @@ export async function registerAthlete(prevState: RegisterAthleteFormState, formD
 
 // OLD
 
-export async function authenticate(prevState: string | undefined, formData: FormData,) {
-  try {
-    await signIn('credentials', formData);
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return 'Invalid credentials.';
-        default:
-          return 'Something went wrong.';
-      }
-    }
-    throw error;
-  }
-}
 
 const FormSchema = z.object({
   id: z.string(),

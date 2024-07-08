@@ -5,17 +5,29 @@ import {
   AtSymbolIcon,
   KeyIcon,
   ExclamationCircleIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/button';
 import { useFormState, useFormStatus } from 'react-dom';
-import { authenticate } from '@/app/lib/actions';
+import { login } from '@/app/lib/actions';
+import { redirect } from 'next/navigation';
  
 export default function LoginForm() {
-  const [errorMessage, dispatch] = useFormState(authenticate, undefined);
+  const [formState, formAction] = useFormState(loginAndRedirect, { /* initialState is empty */ });
  
+  async function loginAndRedirect(prevState: RegisterCoachFormState, formData: FormData) {
+    const result = await login(formState, formData);
+    if (!result.errors) {
+      redirect('/dashboard');
+    } 
+    else {
+      return result;
+    }
+  };
+
   return (
-    <form action={dispatch} className="space-y-3">
+    <form action={formAction} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
         <h1 className={`${lusitana.className} mb-3 text-2xl`}>
           Please log in to continue.
@@ -39,6 +51,14 @@ export default function LoginForm() {
               />
               <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
+            <div id="email-error" aria-live="polite" aria-atomic="true">
+              {formState.errors?.email &&
+                formState.errors.email.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
+            </div>
           </div>
           <div className="mt-4">
             <label
@@ -59,6 +79,14 @@ export default function LoginForm() {
               />
               <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
+            <div id="password-error" aria-live="polite" aria-atomic="true">
+              {formState.errors?.password &&
+                formState.errors.password.map((error: string) => (
+                  <p className="mt-2 text-sm text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
+            </div>
           </div>
         </div>
         <LoginButton />
@@ -67,10 +95,10 @@ export default function LoginForm() {
           aria-live="polite"
           aria-atomic="true"
         >
-          {errorMessage && (
+          {formState.message && !formState.errors && (
             <>
-              <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">{errorMessage}</p>
+              <UserCircleIcon className="h-5 w-5 text-green-500" />
+              <p className="text-sm text-green-500">{formState.message}</p>
             </>
           )}
         </div>
