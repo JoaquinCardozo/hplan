@@ -10,13 +10,13 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/button';
 import { useFormState, useFormStatus } from 'react-dom';
-import { login } from '@/app/lib/actions';
+import { login, LoginFormState } from '@/app/lib/actions';
 import { redirect } from 'next/navigation';
  
 export default function LoginForm() {
   const [formState, formAction] = useFormState(loginAndRedirect, { /* initialState is empty */ });
  
-  async function loginAndRedirect(prevState: RegisterCoachFormState, formData: FormData) {
+  async function loginAndRedirect(prevState: LoginFormState, formData: FormData) {
     const result = await login(formState, formData);
     if (!result.errors) {
       redirect('/dashboard');
