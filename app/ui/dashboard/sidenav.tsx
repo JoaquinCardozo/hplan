@@ -2,9 +2,8 @@ import Link from 'next/link';
 import NavLinks from '@/app/ui/dashboard/nav-links';
 import AcmeLogo from '@/app/ui/acme-logo';
 import { PowerIcon } from '@heroicons/react/24/outline';
-import { logout } from '@/app/lib/actions';
+import { logout, SessionData } from '@/app/lib/actions';
 import { cookies } from "next/headers";
-import { SessionData } from "@/app/actions"
 
 export default function SideNav() {
 
