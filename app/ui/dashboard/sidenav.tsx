@@ -8,7 +8,10 @@ import { cookies } from "next/headers";
 export default function SideNav() {
 
   const cookieStore = cookies();
-  const cookieData = cookieStore.get("session_data").value;
+  const cookieData = cookieStore.get("session_data")?.value;
+  if (!cookieData) {
+    throw new Error("Session data cookie is not set");
+  }
   const userData = JSON.parse(cookieData as string) as SessionData;
 
 
