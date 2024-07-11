@@ -19,6 +19,11 @@ export default async function getUserByEmail(email: string): Promise<User | unde
   }
 }
 
+export type SessionData = {
+  id: string;
+  name: string;
+  email: string;
+};
 
 const LoginFormSchema = z.object({ 
   email: z.string().email({
@@ -69,9 +74,17 @@ export async function login(prevState: LoginFormState, formData: FormData) {
       };
     }
 
+    const sessionData : SessionData = {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    };
+
+    const serializedSessionData = JSON.stringify(sessionData);
+
     cookies().set({
-      name: "user_id", 
-      value: user.id,
+      name: "session_data", 
+      value: serializedSessionData,
       httpOnly: true,
       secure: true,
       maxAge: 60 * 60 * 24 * 7 // one week
@@ -89,7 +102,7 @@ export async function login(prevState: LoginFormState, formData: FormData) {
 }
 
 export async function logout() {
-  cookies().delete("user_id");
+  cookies().delete("session_data");
 
   revalidatePath('/login');
   redirect('/login');

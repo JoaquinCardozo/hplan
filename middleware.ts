@@ -3,14 +3,13 @@ import { cookies } from "next/headers";
 
 export function middleware(request: NextRequest) { 
   const cookieStore = cookies();
-  const userId = cookieStore.get("user_id");
-  console.log(userId);
+  const sessionData = cookieStore.get("session_data");
 
-  if (userId && request.nextUrl.pathname.startsWith('/login')) {
+  if (sessionData && request.nextUrl.pathname.startsWith('/login')) {
     return Response.redirect(new URL('/dashboard', request.url))
   }
 
-  if (!userId && !request.nextUrl.pathname.startsWith('/login')) {
+  if (!sessionData && !request.nextUrl.pathname.startsWith('/login')) {
     return Response.redirect(new URL('/login', request.url))
   }
 }
