@@ -33,19 +33,19 @@ export default function Page() {
             <span>Log in</span> <ArrowRightIcon className="w-5 md:w-6" />
           </Link>
           <Link
-            href="/newgym"
+            href="/register/newgym"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
             <span>New Gym Account</span> <ArrowRightIcon className="w-5 md:w-6" />
           </Link>
           <Link
-            href="/newcoach"
+            href="/register/newcoach"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
             <span>New Coach Account</span> <ArrowRightIcon className="w-5 md:w-6" />
           </Link>
           <Link
-            href="/newathlete"
+            href="/register/newathlete"
             className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
           >
             <span>New Athlete Account</span> <ArrowRightIcon className="w-5 md:w-6" />
