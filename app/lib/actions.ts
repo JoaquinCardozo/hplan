@@ -23,6 +23,7 @@ export type SessionData = {
   id: string;
   name: string;
   email: string;
+  role: string;
 };
 
 const LoginFormSchema = z.object({ 
@@ -77,7 +78,8 @@ export async function login(prevState: LoginFormState, formData: FormData) {
     const sessionData : SessionData = {
       id: user.id,
       name: user.name,
-      email: user.email
+      email: user.email,
+      role: user.role
     };
 
     const serializedSessionData = JSON.stringify(sessionData);
