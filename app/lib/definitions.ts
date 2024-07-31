@@ -10,6 +10,7 @@ export type User = {
   password: string;
   role: string;
   active: boolean;
+  profile_picture_url: string;
 };
 
 export type Gym = {

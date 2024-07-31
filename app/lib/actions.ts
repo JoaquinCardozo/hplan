@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { sql, db } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type { User } from '@/app/lib/definitions';
+import type { User, Gym } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
  
@@ -90,15 +90,14 @@ export async function login(prevState: LoginFormState, formData: FormData) {
     }
 
     const gym = await getCoachGym(user.id);
-    console.log(gym);
 
     const sessionData : SessionData = {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      gymName: gym?.name,
-      gymId: gym?.id
+      gymName: gym ? gym.name : "",
+      gymId: gym ? gym.id : "",
     };
 
     const serializedSessionData = JSON.stringify(sessionData);

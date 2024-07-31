@@ -5,7 +5,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { LatestInvoice } from '@/app/lib/definitions';
 import { fetchLatestGymAthletes } from '@/app/lib/data';
 
-export default async function LatestAthletes({ gymId, gymName }: { gymName: string, gymName: string }){
+export default async function LatestAthletes({ gymId, gymName }: { gymId: string, gymName: string }){
   const latestAthletes = await fetchLatestGymAthletes(gymId);
 
   return (
