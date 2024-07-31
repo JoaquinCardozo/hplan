@@ -7,7 +7,6 @@ import { redirect } from 'next/navigation';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
-
  
 export default async function getUserByEmail(email: string): Promise<User | undefined> {
   try {
@@ -19,11 +18,26 @@ export default async function getUserByEmail(email: string): Promise<User | unde
   }
 }
 
+export async function getCoachGym(user_id: string): Promise<Gym | undefined> {
+  try {
+    const gym = await sql<Gym>`
+      SELECT * FROM gyms 
+      JOIN gyms_coaches ON gyms.id = gyms_coaches.gym_id
+      WHERE gyms_coaches.coach_id=${user_id}`;
+    return gym.rows[0];
+  } catch (error) {
+    console.error('Failed to fetch gym:', error);
+    throw new Error('Failed to fetch gym.');
+  }
+}
+
 export type SessionData = {
   id: string;
   name: string;
   email: string;
   role: string;
+  gymName: string;
+  gymId: string;
 };
 
 const LoginFormSchema = z.object({ 
@@ -75,11 +89,16 @@ export async function login(prevState: LoginFormState, formData: FormData) {
       };
     }
 
+    const gym = await getCoachGym(user.id);
+    console.log(gym);
+
     const sessionData : SessionData = {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      gymName: gym?.name,
+      gymId: gym?.id
     };
 
     const serializedSessionData = JSON.stringify(sessionData);

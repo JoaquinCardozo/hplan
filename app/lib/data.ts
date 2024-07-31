@@ -11,6 +11,43 @@ import {
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
 
+export async function fetchLatestGymAthletes(gym_id: string) {
+  noStore();
+  try {
+    const users = await sql<User>`
+      SELECT users.name, users.email
+      FROM users
+      JOIN gyms_athletes ON gyms_athletes.gym_id = ${gym_id}
+      WHERE users.role = 'athlete'
+      ORDER BY users.name DESC
+      LIMIT 5`;
+    return users.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch the latest ahtletes for the gym.');
+  }
+}
+
+export async function fetchLatestGymCoaches(gym_id: string) {
+  noStore();
+  try {
+    const users = await sql<User>`
+      SELECT users.name, users.email
+      FROM users
+      JOIN gyms_athletes ON gyms_athletes.gym_id = ${gym_id}
+      WHERE users.role = 'coach'
+      ORDER BY users.name DESC
+      LIMIT 5`;
+    return users.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch the latest coaches for the gym.');
+  }
+}
+
+
+// OLD
+
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
