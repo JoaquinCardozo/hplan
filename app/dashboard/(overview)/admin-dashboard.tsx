@@ -1,9 +1,11 @@
 import LatestAthletes from '@/app/ui/dashboard/coach/latest-athletes';
+import LatestCoaches from '@/app/ui/dashboard/admin/latest-coaches';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { LatestInvoicesSkeleton } from '@/app/ui/skeletons';
 import { SessionData } from '@/app/lib/actions';
 import { cookies } from "next/headers";
+import { fetchAllGyms } from '@/app/lib/data';
 
 export default async function AdminDashboard() {
   const cookieStore = cookies();
@@ -12,20 +14,31 @@ export default async function AdminDashboard() {
     throw new Error("Session data cookie is not set");
   }
   const sessionData = JSON.parse(cookieData as string) as SessionData;
-  console.log(sessionData);
-
-  // TODO get all gyms
-  const gym_id = sessionData.gymId;
-  const gym_name = sessionData.gymName;
+  const all_gyms = await fetchAllGyms();
 
   return (
     <>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
         Dashboard for Admin
       </h1>
-      <Suspense fallback={<LatestInvoicesSkeleton />}>
-        <LatestAthletes gymId={gym_id} gymName={gym_name} /> 
-      </Suspense>
+      All Gyms:
+
+      { all_gyms.map((gym) => {
+          return (
+            <div key={gym.id}>
+              { gym.name }
+
+              <Suspense fallback={<LatestInvoicesSkeleton />}>
+                <LatestCoaches gymId={gym.id} gymName={gym.name} /> 
+              </Suspense>
+
+              <Suspense fallback={<LatestInvoicesSkeleton />}>
+                <LatestAthletes gymId={gym.id} gymName={gym.name} /> 
+              </Suspense>
+            </div>
+          )
+        })
+      }
     </>
   );
 }

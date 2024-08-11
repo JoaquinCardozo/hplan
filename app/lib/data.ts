@@ -6,10 +6,24 @@ import {
   InvoicesTable,
   LatestInvoiceRaw,
   User,
+  Gym,
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
+
+export async function fetchAllGyms() {
+  noStore();
+  try {
+    const gyms = await sql<Gym>`
+      SELECT *
+      FROM gyms`;
+    return gyms.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch all gyms.');
+  }
+}
 
 export async function fetchLatestGymAthletes(gym_id: string) {
   noStore();
