@@ -17,7 +17,7 @@ export function CreateExercise() {
 export function UpdateInvoice({ id }: { id: string }) {
   return (
     <Link
-      href={`/dashboard/invoices/${id}/edit`}
+      href={`/dashboard/exercises/${id}/edit`}
       className="rounded-md border p-2 hover:bg-gray-100"
     >
       <PencilIcon className="w-5" />

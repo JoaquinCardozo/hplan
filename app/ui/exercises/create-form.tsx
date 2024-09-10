@@ -26,7 +26,7 @@ export default function Form(){
       </div>
       <div id="name-error" aria-live="polite" aria-atomic="true">
         { state.errors?.name && state.errors.name.map((error: string) => (
-            <p> { error } </p>
+            <p key={error}> { error } </p>
           ))
         }
       </div>
@@ -45,7 +45,7 @@ export default function Form(){
       </div>
       <div id="name-error" aria-live="polite" aria-atomic="true">
         { state.errors?.description && state.errors.description.map((error: string) => (
-            <p> { error } </p>
+            <p key={error}> { error } </p>
           ))
         }
       </div>
@@ -64,7 +64,7 @@ export default function Form(){
       </div>
       <div id="image_url-error" aria-live="polite" aria-atomic="true">
         { state.errors?.image_url && state.errors.image_url.map((error: string) => (
-            <p> { error } </p>
+            <p key={error}> { error } </p>
           ))
         }
       </div>
