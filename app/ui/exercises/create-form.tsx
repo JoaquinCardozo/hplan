@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useFormState } from 'react-dom';
 import { createExercise } from '@/app/lib/actions';
 
-export default function Form(){
+export default function CreateForm(){
   const initialState = { message: null, errors: {} };
   const [state, action] = useFormState(createExercise, initialState);
 
@@ -58,7 +58,7 @@ export default function Form(){
           id="image_url"
           name="image_url"
           type="text"
-          placeholder="Ingresa el link a la imagen"
+          placeholder="Ingresa el enlace a la imagen"
           aria-describedby="image_url-error"
         />
       </div>

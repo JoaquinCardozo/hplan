@@ -1,6 +1,6 @@
 import Pagination from '@/app/ui/exercises/pagination';
 import Search from '@/app/ui/search';
-import Table from '@/app/ui/exercises/table';
+import ExerciseList from '@/app/ui/exercises/list';
 import { CreateExercise } from '@/app/ui/exercises/buttons';
 import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
@@ -20,7 +20,7 @@ export default async function Page({ searchParams }: {
   }) {
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchInvoicesPages(query);
+  //const totalPages = await fetchInvoicesPages(query);
 
   return (
     <div className="w-full">
@@ -32,11 +32,11 @@ export default async function Page({ searchParams }: {
         <CreateExercise />
       </div>
         <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-        <Table query={query} currentPage={currentPage} />
+        <ExerciseList query={query} currentPage={currentPage} />
       </Suspense> 
-      <div className="mt-5 flex w-full justify-center">
+      {/*<div className="mt-5 flex w-full justify-center">
          <Pagination totalPages={totalPages} /> 
-      </div>
+      </div>*/}
     </div>
   );
 }

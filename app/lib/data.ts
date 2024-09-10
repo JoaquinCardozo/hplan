@@ -7,6 +7,7 @@ import {
   LatestInvoiceRaw,
   User,
   Gym,
+  Exercise,
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
@@ -58,6 +59,36 @@ export async function fetchLatestGymCoaches(gym_id: string) {
     throw new Error('Failed to fetch the latest coaches for the gym.');
   }
 }
+
+// EXERCISES
+
+const EXERCISES_PER_PAGE = 5;
+export async function fetchFilteredExercisesByPage(query: string, currentPage: number){
+  const page_offset = (currentPage - 1) * EXERCISES_PER_PAGE;
+  noStore();
+  try {
+    const exercises = await sql<Exercise>`
+      SELECT
+        exercises.id,
+        exercises.name,
+        exercises.description,
+        exercises.image_url,
+        exercises.video_url
+      FROM exercises
+      WHERE
+        exercises.name ILIKE ${`%${query}%`} OR
+        exercises.description ILIKE ${`%${query}%`}
+      ORDER BY exercises.name ASC
+      LIMIT ${EXERCISES_PER_PAGE} OFFSET ${page_offset}
+    `;
+    
+    return exercises.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch exercises');
+  }
+}
+
 
 
 // OLD
