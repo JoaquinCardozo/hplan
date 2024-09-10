@@ -23,6 +23,55 @@ export type GymCoach = {
   gymId: string;
 };
 
+
+// PLANS
+
+export type Exercise = {
+  id: string;
+  name: string;
+  description: string;
+  image_url: string;
+  video_url: string;
+}
+
+export type Workout = {
+  id: string;
+  name: string;
+  description: string;
+  workout_type: 'amrap' | 'emom' | 'rounds';
+  workout_value: number;
+}
+
+export type WorkoutExercise = {
+  workout_id: string;
+  position: number;
+  exercise_id: string;
+  reps: string;
+  weight: string;
+}
+
+// export type PlanBlock = {
+//   id: string;
+//   name: string;
+//   session_id: string;
+// }
+
+// export type PlanBlockRest = {
+//   block_id: string;
+//   rest_type: 'seconds' | 'minutes';
+//   rest_value: number;
+// }
+
+// export type PlanBlockWorkout = {
+//   block_id: string;
+//   workout_id: string;
+// }
+
+
+
+
+
+
 // OLD
 
 export type Customer = {

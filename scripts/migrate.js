@@ -1,8 +1,11 @@
 const { db } = require('@vercel/postgres');
 
 async function migrate(client) {
+  
+  // TODO create table users if does not exists (mover de seed.js)
+
+  // Add the column "role" to the table "users" if does not exists
   try {
-    // Add the column "role" to the table "users" if does not exists
     await client.sql`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS role VARCHAR(50) NOT NULL DEFAULT 'athlete';
@@ -14,8 +17,8 @@ async function migrate(client) {
     throw error;
   }
 
+  // Add the column "active" to the table "users" if does not exists
   try {
-    // Add the column "active" to the table "users" if does not exists
     await client.sql`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT FALSE;
@@ -27,8 +30,8 @@ async function migrate(client) {
     throw error;
   }
 
+  // Create the "gyms" table if it doesn't exist
   try {
-    // Create the "gyms" table if it doesn't exist
     await client.sql`
       CREATE TABLE IF NOT EXISTS gyms (
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -42,8 +45,8 @@ async function migrate(client) {
     throw error;
   }
 
+  // Create the "gyms_coaches" table if it doesn't exist
   try {
-    // Create the "gyms_coaches" table if it doesn't exist
     await client.sql`
       CREATE TABLE IF NOT EXISTS gyms_coaches (
         coach_id UUID NOT NULL,
@@ -60,8 +63,8 @@ async function migrate(client) {
     throw error;
   }
 
+  // Create the "gyms_athletes" table if it doesn't exist
   try {
-    // Create the "gyms_athletes" table if it doesn't exist
     await client.sql`
       CREATE TABLE IF NOT EXISTS gyms_athletes (
         athlete_id UUID NOT NULL,
@@ -73,6 +76,63 @@ async function migrate(client) {
     `;
 
     console.log(`Created "gyms_athletes" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Create the "exercises" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS exercises (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description VARCHAR(255),
+        image_url VARCHAR(255),
+        video_url VARCHAR(255)
+      );
+    `;
+
+    console.log(`Created "exercises" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Create the "workouts" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS workouts (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255),
+        description VARCHAR(255),
+        workout_type VARCHAR(255),
+        workout_value INT
+      );
+    `;
+
+    console.log(`Created "workouts" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Create the "workout_exercises" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS workout_exercises (
+        workout_id UUID NOT NULL,
+        FOREIGN KEY (workout_id) REFERENCES workouts(id),
+        position INT NOT NULL,
+        PRIMARY KEY (workout_id, position),
+        exercise_id UUID NOT NULL,
+        FOREIGN KEY (exercise_id) REFERENCES exercises(id),
+        reps VARCHAR(255),
+        weight VARCHAR(255)
+      );
+    `;
+
+    console.log(`Created "workout_exercises" table`);
   } catch (error) {
     console.error('Error migrating database:', error);
     throw error;

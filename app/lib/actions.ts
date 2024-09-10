@@ -330,6 +330,62 @@ export async function registerAthlete(prevState: RegisterAthleteFormState, formD
 }
 
 
+// EXERCISES
+
+const ExerciseFormSchema = z.object({
+  id: z.string(),
+  name: z.string()
+    .min(1, { message: 'Name is required and cannot be empty.' }),
+  description: z.string(),
+  image_url: z.string().nullable(),
+  video_url: z.string().nullable(),
+});
+const CreateExerciseFormSchema = ExerciseFormSchema.omit({ id: true });
+
+export type CreateExerciseState = {
+  errors?: {
+    name?: string[];
+    description?: string[];
+    image_url?: string[];
+    video_url?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createExercise(prevState: CreateExerciseState, formData: FormData) {
+  const validatedFields = CreateExerciseFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    image_url: formData.get('image_url'),
+    video_url: formData.get('video_url'),
+  });
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Create Exercise.',
+    };
+  }
+  const { name, description, image_url, video_url } = validatedFields.data;
+
+  try {
+    await sql`
+      INSERT INTO exercises (name, description, image_url, video_url)
+      VALUES (${name}, ${description}, ${image_url}, ${video_url})
+    `;
+  } catch (error){
+      return { message: 'Database Error: Failed to Create Exercise' };
+  }
+
+  revalidatePath('/dashboard/exercises');
+  redirect('/dashboard/exercises');
+}
+
+
+
+
+
+
+
 // OLD
 
 
