@@ -5,7 +5,7 @@ import { CreateExercise } from '@/app/ui/exercises/buttons';
 import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
-import { fetchInvoicesPages } from '@/app/lib/data';
+import { fetchExercisesTotalPages } from '@/app/lib/data';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default async function Page({ searchParams }: {
   }) {
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
-  //const totalPages = await fetchInvoicesPages(query);
+  const totalPages = await fetchExercisesTotalPages(query);
 
   return (
     <div className="w-full">
@@ -34,9 +34,9 @@ export default async function Page({ searchParams }: {
         <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
         <ExerciseList query={query} currentPage={currentPage} />
       </Suspense> 
-      {/*<div className="mt-5 flex w-full justify-center">
+      <div className="mt-5 flex w-full justify-center">
          <Pagination totalPages={totalPages} /> 
-      </div>*/}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,10 @@
+'use client'
+
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteInvoice } from '@/app/lib/actions';
+import { deleteExercise } from '@/app/lib/actions';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 export function CreateExercise() {
   return (
@@ -14,10 +18,10 @@ export function CreateExercise() {
   );
 }
 
-export function UpdateInvoice({ id }: { id: string }) {
+export function UpdateExercise({ id }: { id: string }) {
   return (
     <Link
-      href={`/dashboard/exercises/${id}/edit`}
+      href={'/dashboard/exercises/' + id + '/edit'}
       className="rounded-md border p-2 hover:bg-gray-100"
     >
       <PencilIcon className="w-5" />
@@ -25,11 +29,18 @@ export function UpdateInvoice({ id }: { id: string }) {
   );
 }
 
-export function DeleteInvoice({ id }: { id: string }) {
-  const deleteInvoiceWithId = deleteInvoice.bind(null, id);
+export function DeleteExercise({ id }: { id: string }) {
+  const deleteExerciseWithId = async () => {
+    const isConfirmed = window.confirm("¿Borrar este ejercicio?");
+    if (isConfirmed) {
+      await deleteExercise(id);
+      revalidatePath('/dashboard/exercises');
+      redirect('/dashboard/exercises');
+    }
+  };
 
   return (
-    <form action={deleteInvoiceWithId}>
+    <form action={deleteExerciseWithId}>
       <button className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />

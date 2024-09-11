@@ -62,7 +62,7 @@ export async function fetchLatestGymCoaches(gym_id: string) {
 
 // EXERCISES
 
-const EXERCISES_PER_PAGE = 5;
+const EXERCISES_PER_PAGE = 10;
 export async function fetchFilteredExercisesByPage(query: string, currentPage: number){
   const page_offset = (currentPage - 1) * EXERCISES_PER_PAGE;
   noStore();
@@ -83,12 +83,54 @@ export async function fetchFilteredExercisesByPage(query: string, currentPage: n
     `;
     
     return exercises.rows;
+
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch exercises');
   }
 }
 
+export async function fetchExercisesTotalPages(query: string){
+  noStore();
+  try {
+    const count = await sql`
+      SELECT COUNT(*)
+      FROM exercises
+      WHERE
+        exercises.name ILIKE ${`%${query}%`} OR
+        exercises.description ILIKE ${`%${query}%`}
+    `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / EXERCISES_PER_PAGE);
+    return totalPages;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of exercises');
+  }
+}
+
+export async function fetchExerciseById(id: string){
+  noStore();
+  try {
+    const data = await sql<Exercise>`
+      SELECT
+        exercises.id,
+        exercises.name,
+        exercises.description,
+        exercises.image_url,
+        exercises.video_url
+      FROM exercises
+      WHERE exercises.id = ${id};
+    `;
+  
+    return data.rows[0];
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch exercise');
+  }
+}
 
 
 // OLD

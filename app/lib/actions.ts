@@ -380,6 +380,46 @@ export async function createExercise(prevState: CreateExerciseState, formData: F
   redirect('/dashboard/exercises');
 }
 
+export async function updateExercise(id: string, prevState: CreateExerciseState, formData: FormData) {
+  const validatedFields = CreateExerciseFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    image_url: formData.get('image_url'),
+    video_url: formData.get('video_url'),
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Update Exercise.',
+    };
+  } 
+  const { name, description, image_url, video_url } = validatedFields.data;
+ 
+  try {
+    await sql`
+      UPDATE exercises
+      SET name = ${name}, description = ${description}, image_url = ${image_url}, video_url = ${video_url}
+      WHERE id = ${id}
+    `;
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Exercise.' };
+  }
+ 
+  revalidatePath('/dashboard/exercises');
+  redirect('/dashboard/exercises');
+}
+
+export async function deleteExercise(id: string) {
+  try {
+    await sql`DELETE FROM exercises WHERE id = ${id}`;
+    revalidatePath('/dashboard/exercises');
+    return { message: 'Deleted Exercise' };
+      
+  } catch (error){
+    return { message: 'Database Error: Failed to Delete Exercise' };
+  }
+}
 
 
 
