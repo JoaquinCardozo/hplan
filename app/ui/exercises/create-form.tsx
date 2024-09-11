@@ -70,6 +70,25 @@ export default function CreateForm(){
       </div>
 
       <div>
+        <label>
+          Video
+        </label>
+        <input 
+          id="video_url"
+          name="video_url"
+          type="text"
+          placeholder="Ingresa el enlace al video"
+          aria-describedby="video_url-error"
+        />
+      </div>
+      <div id="video_url-error" aria-live="polite" aria-atomic="true">
+        { state.errors?.video_url && state.errors.video_url.map((error: string) => (
+            <p key={error}> { error } </p>
+          ))
+        }
+      </div>
+
+      <div>
         <Button type="submit">
           Crear ejercicio
         </Button>

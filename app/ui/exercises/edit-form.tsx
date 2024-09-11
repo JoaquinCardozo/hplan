@@ -67,16 +67,48 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
           defaultValue={exercise.image_url}
           aria-describedby="image_url-error"
         />
-        <Image
-          src={exercise.image_url}
-          width={150}
-          height={150}
-          alt={exercise.name}
-          className="border-2 rounded-lg"
-        />
+        {exercise.image_url && (
+          <Image
+            src={exercise.image_url}
+            width={150}
+            height={100}
+            alt={exercise.name}
+            className="border-2 rounded-lg"
+          />
+        )}
       </div>
       <div id="image_url-error" aria-live="polite" aria-atomic="true">
         { state.errors?.image_url && state.errors.image_url.map((error: string) => (
+            <p key={error}> { error } </p>
+          ))
+        }
+      </div>
+
+      <div>
+        <label>
+          Video
+        </label>
+        <input 
+          id="video_url"
+          name="video_url"
+          type="text"
+          placeholder="Ingresa el enlace al video"
+          defaultValue={exercise.video_url}
+          aria-describedby="video_url-error"
+        />
+        {exercise.video_url && (
+          <iframe 
+            width="150" 
+            height="100" 
+            src={exercise.video_url}
+            title={exercise.name} 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowFullScreen
+          />
+        )}
+      </div>
+      <div id="video_url-error" aria-live="polite" aria-atomic="true">
+        { state.errors?.video_url && state.errors.video_url.map((error: string) => (
             <p key={error}> { error } </p>
           ))
         }
