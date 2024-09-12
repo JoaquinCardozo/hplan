@@ -3,6 +3,7 @@
 import { Exercise } from '@/app/lib/definitions'; 
 import { updateExercise } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,6 +13,16 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
 	const updateExerciseWithId = updateExercise.bind(null, exercise.id);
   const [state, action] = useFormState(updateExerciseWithId, initialState);
 	
+  const imageUrlRef = useRef('');
+  const [previewImageUrl, setPreviewImageUrl] = useState();
+  const videoUrlRef = useRef('');
+  const [previewVideoUrl, setPreviewVideoUrl] = useState();
+
+  useEffect(() => {
+    setPreviewImageUrl(exercise.image_url);
+    setPreviewVideoUrl(exercise.video_url);
+  }, []);
+
 	return (
 		<form action={action}>
 
@@ -66,10 +77,15 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
           placeholder="Ingresa el enlace a la imagen"
           defaultValue={exercise.image_url}
           aria-describedby="image_url-error"
+          ref={imageUrlRef}
         />
-        {exercise.image_url && (
+        <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
+        onClick={()=> setPreviewImageUrl(imageUrlRef.current.value)}>
+          <span>Preview</span>
+        </button>
+        {previewImageUrl && (
           <Image
-            src={exercise.image_url}
+            src={previewImageUrl}
             width={150}
             height={100}
             alt={exercise.name}
@@ -95,16 +111,21 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
           placeholder="Ingresa el enlace al video"
           defaultValue={exercise.video_url}
           aria-describedby="video_url-error"
+          ref={videoUrlRef}
         />
-        {exercise.video_url && (
+        <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
+        onClick={()=> setPreviewVideoUrl(videoUrlRef.current.value)}>
+          <span>Preview</span>
+        </button>
+        {previewVideoUrl && (
           <iframe 
             width="150" 
             height="100" 
-            src={exercise.video_url}
-            title={exercise.name} 
+            src={previewVideoUrl}
+            title="Preview"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
             allowFullScreen
-          />
+          />        
         )}
       </div>
       <div id="video_url-error" aria-live="polite" aria-atomic="true">
