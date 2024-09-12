@@ -1,4 +1,4 @@
-import { Square3Stack3DIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 import { lusitana } from '@/app/ui/fonts';
 
 export default function AcmeLogo() {
@@ -6,8 +6,13 @@ export default function AcmeLogo() {
     <div
       className={`${lusitana.className} flex flex-row items-center leading-none text-white`}
     >
-      <Square3Stack3DIcon className="h-12 w-12 rotate-[15deg]" />
-      <p className="text-[44px]">HPlan</p>
+      <Image
+        src="/logo.png"
+        width={60}
+        height={60}
+        alt="logo"
+      />
+      <p className="font-bold text-[29px] md:text-[17px] pl-2">Mr. Fitness Coach</p>
     </div>
   );
 }

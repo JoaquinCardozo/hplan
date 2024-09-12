@@ -18,7 +18,7 @@ export default function SideNav() {
   return (
     <div className="flex flex-col h-full px-3 py-4 md:px-2">
       <div className="flex flex-row md:flex-col items-end md:items-center justify-end md:justify-center mb-2 p-4 rounded-md bg-blue-600 text-white">
-        <Link className="flex-1" href="/">
+        <Link className="" href="/">
           <AcmeLogo />
         </Link>
         <div className="flex-1 text-right md:text-center font-bold mt-1">
