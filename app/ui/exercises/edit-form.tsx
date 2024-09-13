@@ -82,7 +82,7 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
         <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
         onClick={()=> {
           if (imageUrlRef.current)
-            setPreviewImageUrl(imageUrlRef.current);
+            setPreviewImageUrl(imageUrlRef.current.value);
         }}>
           <span>Preview</span>
         </button>
@@ -119,7 +119,7 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
         <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
         onClick={()=> {
           if (videoUrlRef.current)
-            setPreviewVideoUrl(videoUrlRef.current);
+            setPreviewVideoUrl(videoUrlRef.current.value);
         }}>
           <span>Preview</span>
         </button>
