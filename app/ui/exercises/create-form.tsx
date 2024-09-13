@@ -11,10 +11,10 @@ export default function CreateForm(){
   const initialState = { message: null, errors: {} };
   const [state, action] = useFormState(createExercise, initialState);
   
-  const imageUrlRef = useRef(null);
-  const [previewImageUrl, setPreviewImageUrl] = useState();
-  const videoUrlRef = useRef(null);
-  const [previewVideoUrl, setPreviewVideoUrl] = useState();
+  const imageUrlRef = useRef<HTMLInputElement>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>();
+  const videoUrlRef = useRef<HTMLInputElement>(null);
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | undefined>();
 
   return (
     <form action={action}>

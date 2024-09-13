@@ -13,10 +13,10 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
 	const updateExerciseWithId = updateExercise.bind(null, exercise.id);
   const [state, action] = useFormState(updateExerciseWithId, initialState);
 	
-  const imageUrlRef = useRef(null);
-  const [previewImageUrl, setPreviewImageUrl] = useState <string | undefined>();
-  const videoUrlRef = useRef(null);
-  const [previewVideoUrl, setPreviewVideoUrl] = useState <string | undefined>();
+  const imageUrlRef = useRef<HTMLInputElement>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>();
+  const videoUrlRef = useRef<HTMLInputElement>(null);
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | undefined>();
 
   useEffect(() => {
     setPreviewImageUrl(exercise.image_url);
