@@ -11,9 +11,9 @@ export default function CreateForm(){
   const initialState = { message: null, errors: {} };
   const [state, action] = useFormState(createExercise, initialState);
   
-  const imageUrlRef = useRef('');
+  const imageUrlRef = useRef(null);
   const [previewImageUrl, setPreviewImageUrl] = useState();
-  const videoUrlRef = useRef('');
+  const videoUrlRef = useRef(null);
   const [previewVideoUrl, setPreviewVideoUrl] = useState();
 
   return (
@@ -70,7 +70,10 @@ export default function CreateForm(){
           ref={imageUrlRef}
         />
         <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
-        onClick={()=> setPreviewImageUrl(imageUrlRef.current.value)}>
+        onClick={()=> {
+          if (imageUrlRef.current)
+            setPreviewImageUrl(imageUrlRef.current);
+        }}>
           <span>Preview</span>
         </button>
         {previewImageUrl && (
@@ -103,7 +106,10 @@ export default function CreateForm(){
           ref={videoUrlRef}
         />
         <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
-        onClick={()=> setPreviewVideoUrl(videoUrlRef.current.value)}>
+        onClick={()=> {
+          if (videoUrlRef.current)
+            setPreviewVideoUrl(videoUrlRef.current);
+        }}>
           <span>Preview</span>
         </button>
         {previewVideoUrl && (

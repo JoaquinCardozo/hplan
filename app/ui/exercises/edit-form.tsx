@@ -13,15 +13,15 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
 	const updateExerciseWithId = updateExercise.bind(null, exercise.id);
   const [state, action] = useFormState(updateExerciseWithId, initialState);
 	
-  const imageUrlRef = useRef('');
-  const [previewImageUrl, setPreviewImageUrl] = useState();
-  const videoUrlRef = useRef('');
-  const [previewVideoUrl, setPreviewVideoUrl] = useState();
+  const imageUrlRef = useRef(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState <string | undefined>();
+  const videoUrlRef = useRef(null);
+  const [previewVideoUrl, setPreviewVideoUrl] = useState <string | undefined>();
 
   useEffect(() => {
     setPreviewImageUrl(exercise.image_url);
     setPreviewVideoUrl(exercise.video_url);
-  }, []);
+  }, [exercise.image_url, exercise.video_url]);
 
 	return (
 		<form action={action}>
@@ -80,7 +80,10 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
           ref={imageUrlRef}
         />
         <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
-        onClick={()=> setPreviewImageUrl(imageUrlRef.current.value)}>
+        onClick={()=> {
+          if (imageUrlRef.current)
+            setPreviewImageUrl(imageUrlRef.current);
+        }}>
           <span>Preview</span>
         </button>
         {previewImageUrl && (
@@ -114,7 +117,10 @@ export default function EditForm({ exercise }: { exercise: Exercise }){
           ref={videoUrlRef}
         />
         <button type="button" className="rounded-md border p-2 hover:bg-gray-100"
-        onClick={()=> setPreviewVideoUrl(videoUrlRef.current.value)}>
+        onClick={()=> {
+          if (videoUrlRef.current)
+            setPreviewVideoUrl(videoUrlRef.current);
+        }}>
           <span>Preview</span>
         </button>
         {previewVideoUrl && (

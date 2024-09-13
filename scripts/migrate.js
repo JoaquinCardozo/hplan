@@ -106,8 +106,8 @@ async function migrate(client) {
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
         name VARCHAR(255),
         description VARCHAR(255),
-        workout_type VARCHAR(255),
-        workout_value INT
+        workout_type VARCHAR(255) NOT NULL,
+        workout_value INT NOT NULL
       );
     `;
 
@@ -127,8 +127,9 @@ async function migrate(client) {
         PRIMARY KEY (workout_id, position),
         exercise_id UUID NOT NULL,
         FOREIGN KEY (exercise_id) REFERENCES exercises(id),
-        reps VARCHAR(255),
-        weight VARCHAR(255)
+        reps INT NOT NULL,
+        weight DECIMAL(6, 2),
+        rest INT DEFAULT NULL
       );
     `;
 

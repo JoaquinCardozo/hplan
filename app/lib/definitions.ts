@@ -44,11 +44,13 @@ export type Workout = {
 
 export type WorkoutExercise = {
   workout_id: string;
-  position: number;
   exercise_id: string;
+  position: number;
   reps: string;
-  weight: string;
+  weight: number;
+  rest: number;
 };
+
 
 // export type PlanBlock = {
 //   id: string;
