@@ -23,8 +23,8 @@ const links = [
     icon: UserGroupIcon,
   },
   { 
-    name: 'Plans', 
-    href: '/dashboard/customers', 
+    name: 'Workouts', 
+    href: '/dashboard/workouts', 
     icon: DocumentDuplicateIcon 
   },
 ];

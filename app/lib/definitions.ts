@@ -39,7 +39,7 @@ export type Workout = {
   name: string;
   description: string;
   workout_type: 'amrap' | 'emom' | 'rounds';
-  workout_value: number;
+  workout_value: string;
 };
 
 export type WorkoutExercise = {
@@ -47,9 +47,15 @@ export type WorkoutExercise = {
   exercise_id: string;
   position: number;
   reps: string;
-  weight: number;
-  rest: number;
+  weight: string;
+  rest: string;
+  notes: string;
 };
+
+export type ExerciseName = {
+  id: string;
+  name: string;
+}
 
 
 // export type PlanBlock = {

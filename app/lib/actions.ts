@@ -421,7 +421,82 @@ export async function deleteExercise(id: string) {
   }
 }
 
+const WorkoutExerciseSchema = z.object({
+  exercise_id: z.string(),
+  position: z.number(),
+  reps: z.string().min(1, { message: 'Ingresar la cantidad de repeticiones.' }),
+  weight: z.string(),
+  rest: z.string(),
+  notes: z.string(),
+});
+const WorkoutFormSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  workout_type: z.string().min(1, { message: 'Elegir un tipo de circuito.' }),
+  workout_value: z.string().min(1, { message: 'Ingresar un valor.' }),
+  workout_exercises: z.array(WorkoutExerciseSchema).min(1, { message: 'Agregar al memnos un ejercicio.' }),
+});
+const CreateWorkoutFormSchema = WorkoutFormSchema.omit({ id: true });
 
+export type CreateWorkoutState = {
+  errors?: {
+    name?: string[];
+    description?: string[];
+    workout_type?: string[];
+    workout_value?: string[];
+    workout_exercises?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createWorkout(prevState: CreateWorkoutState, formData: FormData) {
+  const validatedFields = CreateWorkoutFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    workout_type: formData.get('workout_type'),
+    workout_value: formData.get('workout_value'),
+    workout_exercises: JSON.parse(formData.get('workout_exercises') as string)
+  });
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Create Workout.',
+    };
+  }
+  const { name, description, workout_type, workout_value, workout_exercises } = validatedFields.data;
+
+  const client = await db.connect();
+  try {
+    await client.sql`BEGIN`;
+
+    const newWorkoutQuery = await client.sql`
+      INSERT INTO workouts (name, description, workout_type, workout_value)
+      VALUES (${name}, ${description}, ${workout_type}, ${workout_value})
+      RETURNING id
+    `;
+    const workoutId = newWorkoutQuery.rows[0].id;
+
+    await Promise.all(
+      workout_exercises.map(exercise => 
+        client.sql`
+          INSERT INTO workout_exercises (workout_id, exercise_id, position, reps, weight, rest, notes)
+          VALUES (${workoutId}, ${exercise.exercise_id}, ${exercise.position}, ${exercise.reps}, ${exercise.weight}, ${exercise.rest}, ${exercise.notes})
+        `.catch(innerError => {
+            throw innerError;
+        })
+      )
+    );
+
+    await client.sql`COMMIT`;
+  } catch (error){
+    await client.sql`ROLLBACK`;
+    return { message: 'Database Error: Failed to Create Workout'};
+  }
+
+    revalidatePath('/dashboard/workouts');
+    redirect('/dashboard/workouts');
+}
 
 
 

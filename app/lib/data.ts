@@ -8,6 +8,7 @@ import {
   User,
   Gym,
   Exercise,
+  ExerciseName,
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
@@ -61,6 +62,22 @@ export async function fetchLatestGymCoaches(gym_id: string) {
 }
 
 // EXERCISES
+
+export async function fetchExercisesNames(){
+  noStore();
+  try {
+    const data = await sql<ExerciseName>`
+      SELECT id, name
+      FROM exercises
+      ORDER BY name ASC
+    `;
+
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch exercises');
+  }
+}
 
 const EXERCISES_PER_PAGE = 10;
 export async function fetchFilteredExercisesByPage(query: string, currentPage: number){

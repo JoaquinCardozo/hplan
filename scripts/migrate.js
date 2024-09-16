@@ -107,7 +107,7 @@ async function migrate(client) {
         name VARCHAR(255),
         description VARCHAR(255),
         workout_type VARCHAR(255) NOT NULL,
-        workout_value INT NOT NULL
+        workout_value VARCHAR(255)
       );
     `;
 
@@ -127,9 +127,10 @@ async function migrate(client) {
         PRIMARY KEY (workout_id, position),
         exercise_id UUID NOT NULL,
         FOREIGN KEY (exercise_id) REFERENCES exercises(id),
-        reps INT NOT NULL,
-        weight DECIMAL(6, 2),
-        rest INT DEFAULT NULL
+        reps VARCHAR(255) NOT NULL,
+        weight VARCHAR(255),
+        notes VARCHAR(255),
+        rest VARCHAR(255)
       );
     `;
 
