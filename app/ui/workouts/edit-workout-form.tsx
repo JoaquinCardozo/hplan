@@ -5,12 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useFormState } from 'react-dom';
 import { useState } from 'react';
-import { createWorkout, CreateWorkoutState } from '@/app/lib/actions';
-import { ExerciseName, WorkoutExercise } from '@/app/lib/definitions';
+import { updateWorkout, CreateWorkoutState } from '@/app/lib/actions';
+import { ExerciseName, Workout, WorkoutExercise, WorkoutWithExercises } from '@/app/lib/definitions';
 
-export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: ExerciseName[] }){
+export default function EditWorkoutForm({ workout, exerciseNames }: { workout: WorkoutWithExercises, exerciseNames: ExerciseName[] }){
   const initialState = { message: null, errors: {} };
-  const [state, action] = useFormState(formatDataAndCreateWorkout, initialState);
+  const [state, action] = useFormState(formatDataAndUpdateWorkout, initialState);
 
   const [workoutType, setWorkoutType] = useState<string>("rounds");
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,19 +18,30 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
   };
 
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
-  const [addedExercises, setAddedExercises] = useState<ExerciseName[]>([]);
+  const [addedExercises, setAddedExercises] = useState<WorkoutExercise[]>(workout.exercises || []);
 
   const handleAddExercise = () => {
     if (selectedExerciseId) {
       const exerciseName = exerciseNames.find(exercise => exercise.id == selectedExerciseId);
       if (exerciseName) {
-        setAddedExercises([...addedExercises, exerciseName]);
+        const newExercise = {
+          workout_id: workout.id,
+          exercise_id: exerciseName.id,
+          name: exerciseName.name,
+          position: addedExercises.length,
+          weight: "",
+          reps: "",
+          notes: "",
+          rest: "",
+          image_url: ""
+        }
+        setAddedExercises([...addedExercises, newExercise]);
         setSelectedExerciseId('');
       }
     }
   }
 
-  async function formatDataAndCreateWorkout(prevState: CreateWorkoutState, formData: FormData) {
+  async function formatDataAndUpdateWorkout(prevState: CreateWorkoutState, formData: FormData) {
     const exerciseIds = formData.getAll('exercise_id');
     const positions = formData.getAll('position');
     const weights = formData.getAll('weight');
@@ -52,7 +63,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
     formData.append('workout_exercises', JSON.stringify(workoutExercises));
     ['exercise_id', 'position', 'weight', 'reps', 'notes', 'rest'].forEach(field => formData.delete(field));
     
-    return createWorkout(prevState, formData);
+    return updateWorkout(workout.id, prevState, formData);
   }
   
   return (
@@ -68,6 +79,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
           type="text"
           placeholder="Ingresa un nombre"
           aria-describedby="name-error"
+          defaultValue={workout.name}
         />
       </div>
       <div id="name-error" aria-live="polite" aria-atomic="true">
@@ -87,6 +99,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
           type="text"
           placeholder="Ingresa una descripción"
           aria-describedby="description-error"
+          defaultValue={workout.description}
         />
       </div>
       <div id="description-error" aria-live="polite" aria-atomic="true">
@@ -109,7 +122,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
               value="rounds"
               aria-describedby="workout_type-error"
               onChange={handleOptionChange}
-              defaultChecked
+              defaultChecked={workout.workout_type === 'rounds'}
             />
             <label htmlFor="rounds" className="flex cursor-pointer p-2">
               Por rondas
@@ -122,6 +135,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
               type="radio"
               value="amrap"
               onChange={handleOptionChange}
+              defaultChecked={workout.workout_type === 'amrap'}
             />
             <label htmlFor="amrap" className="flex cursor-pointer p-2">
               AMRAP
@@ -134,6 +148,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
               type="radio"
               value="emom"
               onChange={handleOptionChange}
+              defaultChecked={workout.workout_type === 'emom'}
             />
             <label htmlFor="emom" className="flex cursor-pointer p-2">
               Emom
@@ -141,17 +156,17 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
           </div>
         </div>
         <div>
-          <label htmlFor="name">
-            { workoutType === 'rounds' && "Rondas" }
-            { workoutType === 'amrap' && "Tiempo" }
-            { workoutType === 'emom' && "Tiempo" }
+          <label htmlFor="workout_value">
+            {workout.workout_type === 'rounds' && "Rondas"}
+            {workout.workout_type === 'amrap' && "Tiempo"}
+            {workout.workout_type === 'emom' && "Tiempo"}
           </label>
           <input 
             id="workout_value"
             name="workout_value"
             type="text"
             placeholder="Ingresa un valor"
-            defaultValue=""
+            defaultValue={workout.workout_value}
           />
         </div>
       </div>
@@ -195,7 +210,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
           {addedExercises.map((exercise, index) => (
             <div key={index} className="">
               <h3>{exercise.name}</h3>
-              <input id="exercise_id" name="exercise_id" type="hidden" defaultValue={exercise.id} />
+              <input id="exercise_id" name="exercise_id" type="hidden" defaultValue={exercise.exercise_id} />
               <input id="position" name="position" type="hidden" defaultValue={index} />
               <div>
                 <label>Repeticiones: </label>
@@ -204,6 +219,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                   name="reps"
                   type="text"
                   placeholder="Ingresa la cantidad de repeticiones"
+                  defaultValue={exercise.reps}
                 />
               </div>
               <div>
@@ -213,6 +229,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                   name="weight"
                   type="text"
                   placeholder="Ingresa el peso si corresponde"
+                  defaultValue={exercise.weight}
                 />
               </div>
               <div>
@@ -222,6 +239,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                   name="notes"
                   type="text"
                   placeholder="Ingrese aclaraciones si es necesario"
+                  defaultValue={exercise.notes}
                 />
               </div>
               <div>
@@ -231,6 +249,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                   name="rest"
                   type="text"
                   placeholder="Ingrese el descanso después del ejercicio"
+                  defaultValue={exercise.rest}
                 />
               </div>
             </div>
@@ -246,7 +265,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
 
       <div>
         <Button type="submit">
-          Crear circuito
+          Editar circuito
         </Button>
         {state.message && (
           <p className="text-sm text-red-500">{state.message}</p>

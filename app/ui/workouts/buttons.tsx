@@ -2,7 +2,7 @@
 
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteExercise } from '@/app/lib/actions';
+import { deleteWorkout } from '@/app/lib/actions';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -30,17 +30,15 @@ export function UpdateWorkout({ id }: { id: string }) {
 }
 
 export function DeleteWorkout({ id }: { id: string }) {
-  const deleteExerciseWithId = async () => {
-    const isConfirmed = window.confirm("¿Borrar este ejercicio?");
+  const deleteWorkoutWithId = async () => {
+    const isConfirmed = window.confirm("¿Borrar este circuito?");
     if (isConfirmed) {
-      await deleteExercise(id);
-      revalidatePath('/dashboard/workouts');
-      redirect('/dashboard/workouts');
+      deleteWorkout(id);
     }
   };
 
   return (
-    <form action={deleteExerciseWithId}>
+    <form action={deleteWorkoutWithId}>
       <button className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />

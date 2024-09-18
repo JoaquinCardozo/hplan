@@ -33,9 +33,7 @@ export function DeleteExercise({ id }: { id: string }) {
   const deleteExerciseWithId = async () => {
     const isConfirmed = window.confirm("¿Borrar este ejercicio?");
     if (isConfirmed) {
-      await deleteExercise(id);
-      revalidatePath('/dashboard/exercises');
-      redirect('/dashboard/exercises');
+      deleteExercise(id);
     }
   };
 

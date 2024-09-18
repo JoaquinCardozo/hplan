@@ -413,12 +413,13 @@ export async function updateExercise(id: string, prevState: CreateExerciseState,
 export async function deleteExercise(id: string) {
   try {
     await sql`DELETE FROM exercises WHERE id = ${id}`;
-    revalidatePath('/dashboard/exercises');
-    return { message: 'Deleted Exercise' };
       
   } catch (error){
     return { message: 'Database Error: Failed to Delete Exercise' };
   }
+
+  revalidatePath('/dashboard/exercises');
+  redirect('/dashboard/exercises');
 }
 
 const WorkoutExerciseSchema = z.object({
@@ -489,16 +490,83 @@ export async function createWorkout(prevState: CreateWorkoutState, formData: For
     );
 
     await client.sql`COMMIT`;
+
   } catch (error){
     await client.sql`ROLLBACK`;
     return { message: 'Database Error: Failed to Create Workout'};
   }
 
-    revalidatePath('/dashboard/workouts');
-    redirect('/dashboard/workouts');
+  revalidatePath('/dashboard/workouts');
+  redirect('/dashboard/workouts');
 }
 
+export async function updateWorkout(id: string, prevState: CreateWorkoutState, formData: FormData) {
+  const validatedFields = CreateWorkoutFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    workout_type: formData.get('workout_type'),
+    workout_value: formData.get('workout_value'),
+    workout_exercises: JSON.parse(formData.get('workout_exercises') as string)
+  });
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Create Workout.',
+    };
+  }
+  const { name, description, workout_type, workout_value, workout_exercises } = validatedFields.data;
 
+  const client = await db.connect();
+  try {
+    await client.sql`BEGIN`;
+
+    const newWorkoutQuery = await client.sql`
+      UPDATE workouts
+      SET name = ${name}, description = ${description}, workout_type = ${workout_type}, workout_value = ${workout_value}
+      WHERE id = ${id}
+    `;
+
+    await Promise.all(
+      workout_exercises.map(exercise => 
+        client.sql`
+          INSERT INTO workout_exercises (workout_id, exercise_id, position, reps, weight, rest, notes)
+          VALUES (${id}, ${exercise.exercise_id}, ${exercise.position}, ${exercise.reps}, ${exercise.weight}, ${exercise.rest}, ${exercise.notes})
+          ON CONFLICT (workout_id, position)
+          DO UPDATE
+          SET reps = ${exercise.reps}, weight = ${exercise.weight}, rest = ${exercise.rest}, notes = ${exercise.notes}
+        `.catch(innerError => {
+            throw innerError;
+        })
+      )
+    );
+
+    await client.sql`COMMIT`;
+
+  } catch (error){
+    await client.sql`ROLLBACK`;
+    return { message: 'Database Error: Failed to Create Workout'};
+  }
+
+  revalidatePath('/dashboard/workouts');
+  redirect('/dashboard/workouts');
+}
+
+export async function deleteWorkout(id: string) {
+  const client = await db.connect();
+  try {
+    await client.sql`BEGIN`;
+    await client.sql`DELETE FROM workout_exercises WHERE workout_id = ${id}`;
+    await client.sql`DELETE FROM workouts WHERE id = ${id}`;
+    await client.sql`COMMIT`;
+
+  } catch (error){
+    await client.sql`ROLLBACK`;
+    return { message: 'Database Error: Failed to Delete Workout' };
+  }
+
+  revalidatePath('/dashboard/workouts');
+  redirect('/dashboard/workouts');
+}
 
 
 // OLD

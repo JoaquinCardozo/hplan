@@ -9,6 +9,7 @@ import {
   Gym,
   Exercise,
   ExerciseName,
+  WorkoutWithExercises,
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
@@ -149,6 +150,154 @@ export async function fetchExerciseById(id: string){
   }
 }
 
+
+const WORKOUTS_PER_PAGE = 10;
+export async function fetchFilteredWorkoutsByPage(query: string, currentPage: number){
+  const page_offset = (currentPage - 1) * WORKOUTS_PER_PAGE;
+  noStore();
+  try {
+    const workoutsWithExercises = await sql`
+      SELECT
+        workouts.id AS workout_id,
+        workouts.name AS workout_name,
+        workouts.description AS workout_description,
+        workouts.workout_type,
+        workouts.workout_value,
+        workout_exercises.exercise_id,
+        workout_exercises.reps,
+        workout_exercises.weight,
+        workout_exercises.rest,
+        workout_exercises.notes,
+        workout_exercises.position,
+        exercises.name AS exercise_name,
+        exercises.image_url AS exercise_image_url
+      FROM workouts
+      LEFT JOIN workout_exercises ON workouts.id = workout_exercises.workout_id
+      LEFT JOIN exercises ON workout_exercises.exercise_id = exercises.id
+      WHERE
+        workouts.name ILIKE ${`%${query}%`} OR
+        workouts.description ILIKE ${`%${query}%`}
+      ORDER BY workouts.name, workout_exercises.position ASC
+      LIMIT ${WORKOUTS_PER_PAGE} OFFSET ${page_offset}
+    `;
+    
+    const groupedWorkouts: Record<string, any> = {};
+
+    workoutsWithExercises.rows.forEach(row => {
+      const workoutId = row.workout_id;
+
+      if (!groupedWorkouts[workoutId]) {
+        groupedWorkouts[workoutId] = {
+          id: workoutId,
+          name: row.workout_name,
+          description: row.workout_description,
+          workout_type: row.workout_type,
+          workout_value: row.workout_value,
+          exercises: []
+        };
+      }
+
+      groupedWorkouts[workoutId].exercises.push({
+        exercise_id: row.exercise_id,
+        reps: row.reps,
+        weight: row.weight,
+        rest: row.rest,
+        notes: row.notes,
+        position: row.position,
+        name: row.exercise_name,
+        image_url: row.exercise_image_url
+      });
+    });
+
+    return Object.values(groupedWorkouts);
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch workouts');
+  }
+}
+
+export async function fetchWorkoutsTotalPages(query: string){
+  noStore();
+  try {
+    const count = await sql`
+      SELECT COUNT(*)
+      FROM workouts
+      WHERE
+        workouts.name ILIKE ${`%${query}%`} OR
+        workouts.description ILIKE ${`%${query}%`}
+    `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / WORKOUTS_PER_PAGE);
+    return totalPages;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of workouts');
+  }
+}
+
+export async function fetchWorkoutById(id: string) {
+  noStore();
+  try {
+    const data = await sql`
+      SELECT
+        workouts.id,
+        workouts.name,
+        workouts.description,
+        workouts.workout_type,
+        workouts.workout_value,
+        exercises.name AS exercise_name,
+        exercises.image_url AS exercise_image_url,
+        workout_exercises.exercise_id,
+        workout_exercises.position,
+        workout_exercises.reps,
+        workout_exercises.notes,
+        workout_exercises.weight,
+        workout_exercises.rest
+      FROM workouts
+      LEFT JOIN workout_exercises ON workouts.id = workout_exercises.workout_id
+      LEFT JOIN exercises ON workout_exercises.exercise_id = exercises.id
+      WHERE workouts.id = ${id};
+    `;
+  
+    if (data.rows.length === 0) {
+      return null;
+    }
+
+    const workoutWithExercises: WorkoutWithExercises = {
+      id: data.rows[0].id,
+      name: data.rows[0].name,
+      description: data.rows[0].description,
+      workout_type: data.rows[0].workout_type,
+      workout_value: data.rows[0].workout_value,
+      exercises: []
+    };
+
+    // Recorremos todas las filas para agregar los ejercicios
+    data.rows.forEach(row => {
+      if (row.exercise_id) {
+        workoutWithExercises.exercises.push({
+          workout_id: data.rows[0].id,
+          exercise_id: row.exercise_id,
+          name: row.exercise_name,
+          position: row.position,
+          reps: row.reps,
+          weight: row.weight,
+          rest: row.rest,
+          notes: row.notes,
+          image_url: row.exercise_image_url
+        });
+      }
+    });
+
+    return workoutWithExercises;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch workout');
+  }
+}
 
 // OLD
 
