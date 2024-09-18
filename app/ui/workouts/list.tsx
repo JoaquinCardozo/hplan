@@ -6,6 +6,7 @@ import { WorkoutExercise } from '@/app/lib/definitions';
 export default async function WorkoutList({ query, currentPage} : { query: string, currentPage: number }){
 	const workouts = await fetchFilteredWorkoutsByPage(query, currentPage);
 
+	console.log(workouts)
 	return (
 		<div>
 			{workouts?.map((workout) => (

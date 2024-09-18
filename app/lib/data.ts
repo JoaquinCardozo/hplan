@@ -157,6 +157,15 @@ export async function fetchFilteredWorkoutsByPage(query: string, currentPage: nu
   noStore();
   try {
     const workoutsWithExercises = await sql`
+      WITH filtered_workouts AS (
+        SELECT
+          workouts.id
+        FROM workouts
+        WHERE
+          workouts.name ILIKE ${`%${query}%`} OR
+          workouts.description ILIKE ${`%${query}%`}
+        LIMIT ${WORKOUTS_PER_PAGE} OFFSET ${page_offset}
+      )
       SELECT
         workouts.id AS workout_id,
         workouts.name AS workout_name,
@@ -174,11 +183,11 @@ export async function fetchFilteredWorkoutsByPage(query: string, currentPage: nu
       FROM workouts
       LEFT JOIN workout_exercises ON workouts.id = workout_exercises.workout_id
       LEFT JOIN exercises ON workout_exercises.exercise_id = exercises.id
-      WHERE
-        workouts.name ILIKE ${`%${query}%`} OR
-        workouts.description ILIKE ${`%${query}%`}
+      WHERE workouts.id IN (
+        SELECT id
+        FROM filtered_workouts
+      )
       ORDER BY workouts.name, workout_exercises.position ASC
-      LIMIT ${WORKOUTS_PER_PAGE} OFFSET ${page_offset}
     `;
     
     const groupedWorkouts: Record<string, any> = {};
