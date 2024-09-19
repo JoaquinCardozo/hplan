@@ -9,7 +9,7 @@ export default function NotFound() {
       <p>Could not find the requested workout.</p>
       <Link
         href="/dashboard/invoices"
-        className="mt-4 rounded-md bg-orange-500 px-4 py-2 text-sm text-white transition-colors hover:bg-orange-400"
+        className="mt-4 rounded-md bg-black px-4 py-2 text-sm text-white transition-colors hover:bg-black"
       >
         Go Back
       </Link>

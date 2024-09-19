@@ -10,7 +10,7 @@ export function CreateWorkout() {
   return (
     <Link
       href="/dashboard/workouts/create"
-      className="flex h-10 items-center rounded-lg bg-orange-400 px-4 text-sm font-medium text-white transition-colors hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+      className="flex h-10 items-center rounded-lg bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
     >
       <span className="hidden md:block">Create Exercise</span>{' '}
       <PlusIcon className="h-5 md:ml-4" />
