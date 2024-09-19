@@ -12,7 +12,7 @@ export default async function WorkoutList({ query, currentPage} : { query: strin
 			{workouts?.map((workout) => (
 				<div key={workout.id} className="flex flex-col border-2 rounded-lg my-5 p-3">
 
-					<div className="relative flex items-center">
+					<div className="relative flex items-center z-[-1]">
 					  { 
 					    workout.name ? (
 					      <div className="grow font-bold text-center">{workout.name}</div>
