@@ -25,7 +25,7 @@ export default function SideNav() {
           hola { userData.name }
         </div>
       </div>
-      <div className="smx:fixed smx:bottom-0 smx:left-0 smx:right-0 smx:p-3 smx:w-full smx:rounded-t-lg smx:bg-black
+      <div className="z-50 smx:fixed smx:bottom-0 smx:left-0 smx:right-0 smx:p-3 smx:w-full smx:rounded-t-lg smx:bg-black
                       flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
         <NavLinks />
         <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>

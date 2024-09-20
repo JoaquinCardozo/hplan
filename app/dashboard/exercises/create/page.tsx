@@ -1,4 +1,4 @@
-import CreateForm from '@/app/ui/exercises/create-form';
+import CreateExerciseForm from '@/app/ui/exercises/create-exercise-form';
 import Breadcrumbs from '@/app/ui/exercises/breadcrumbs';
  
 export default async function Page() {
@@ -18,7 +18,7 @@ export default async function Page() {
           },
         ]}
       />
-      <CreateForm />
+      <CreateExerciseForm />
     </main>
   );
 }

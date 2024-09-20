@@ -8,7 +8,7 @@ export default async function ExerciseList({ query, currentPage } : { query: str
   return (
    <div>
   {exercises?.map((exercise) => (
-    <div key={exercise.id} className="flex items-center justify-between border-2 rounded-lg my-5">
+    <div key={exercise.id} className="flex items-center justify-between border rounded-lg my-5">
       
       <div className="basis-1/4 p-5 ">
         <p className="font-bold">{exercise.name}</p>

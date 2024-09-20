@@ -6,13 +6,12 @@ import { WorkoutExercise } from '@/app/lib/definitions';
 export default async function WorkoutList({ query, currentPage} : { query: string, currentPage: number }){
 	const workouts = await fetchFilteredWorkoutsByPage(query, currentPage);
 
-	console.log(workouts)
 	return (
 		<div>
 			{workouts?.map((workout) => (
-				<div key={workout.id} className="flex flex-col border-2 rounded-lg my-5 p-3">
+				<div key={workout.id} className="flex flex-col border rounded-lg my-5 p-3">
 
-					<div className="relative flex items-center z-[-1]">
+					<div className="relative flex items-center">
 					  { 
 					    workout.name ? (
 					      <div className="grow font-bold text-center">{workout.name}</div>

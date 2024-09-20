@@ -1,4 +1,4 @@
-import EditForm from '@/app/ui/exercises/edit-form';
+import EditExerciseForm from '@/app/ui/exercises/edit-exercise-form';
 import Breadcrumbs from '@/app/ui/exercises/breadcrumbs';
 import { fetchExerciseById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           },
         ]}
       />
-      <EditForm exercise={exercise} />
+      <EditExerciseForm exercise={exercise} />
     </main>
   );
 }

@@ -63,7 +63,7 @@ export type WorkoutWithExercises = {
   id: string;
   name: string;
   description: string;
-  workout_type: 'amrap' | 'emom' | 'rounds';
+  workout_type: 'amrap' | 'emom' | 'rounds' | 'other';
   workout_value: string;
   exercises: WorkoutExercise[];
 }
