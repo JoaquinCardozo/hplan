@@ -7,7 +7,7 @@ import { useFormState } from 'react-dom';
 import { useState } from 'react';
 import { updateWorkout, CreateWorkoutState } from '@/app/lib/actions';
 import { ExerciseName, Workout, WorkoutExercise, WorkoutWithExercises } from '@/app/lib/definitions';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function EditWorkoutForm({ workout, exerciseNames }: { workout: WorkoutWithExercises, exerciseNames: ExerciseName[] }){
   const initialState = { message: null, errors: {} };
@@ -250,11 +250,12 @@ export default function EditWorkoutForm({ workout, exerciseNames }: { workout: W
             }
           </select>
           <button type="button" 
-            className={`rounded-md border p-2 text-sm font-medium 
+            className={`rounded-md border p-2 text-sm font-medium flex
               ${selectedExerciseId ? 'hover:bg-gray-100 text-gray-600' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
             onClick={handleAddExercise}
             disabled={!selectedExerciseId}>
               <span>Agregar ejercicio</span>
+              <PlusIcon className="h-5 ml-2" />
           </button>
         </div>
         <div className="mt-4">

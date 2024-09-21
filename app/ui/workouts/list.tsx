@@ -11,7 +11,7 @@ export default async function WorkoutList({ query, currentPage} : { query: strin
 			{workouts?.map((workout) => (
 				<div key={workout.id} className="flex flex-col border rounded-lg my-5 p-3">
 
-					<div className="relative flex items-center">
+					<div className="relative flex items-center mb-5">
 					  { 
 					    workout.name ? (
 					      <div className="grow font-bold text-center">{workout.name}</div>
@@ -27,8 +27,8 @@ export default async function WorkoutList({ query, currentPage} : { query: strin
 
 					<div className="">
 						{
-		        	workout.name && 
-		        		<p className="text-sm">{workout.description}</p>
+		        	workout.description && 
+		        		<p className="text-sm mb-5">{workout.description}</p>
 		        }{ 
 		        	workout.workout_type == "rounds" && 
 		      			<p className="font-bold">{workout.workout_value} {workout.workout_value == 1 ? 'ronda' : 'rondas'}</p>
@@ -41,24 +41,31 @@ export default async function WorkoutList({ query, currentPage} : { query: strin
 		      	}
 		      </div>
 
+		      <div className="flex flex-col gap-2">
 		      {workout.exercises?.map((exercise : WorkoutExercise) => (
-		      	<div key={workout.id + exercise.position + exercise.exercise_id} className="flex flex-row justify-between items-center space-x-4">
-						  <div className="flex-grow flex space-x-4">
-						    <div>{exercise.reps}</div>
-						    <div>{exercise.name}</div>
-						    { exercise.weight && <div>({exercise.weight} kg)</div> }
-						  </div>
-						  {exercise.image_url && (
-					      <Image
-					        src={exercise.image_url}
-					        width={150}
-					        height={100}
-					        alt={exercise.name}
-					        className="border-2 rounded-lg"
-					      />
-						  )}
+		      	<div key={workout.id + exercise.position + exercise.exercise_id}>
+			      	<div className="flex flex-row justify-between items-center space-x-4">
+							  <div className="flex-grow flex space-x-4">
+							    <div>{exercise.reps}</div>
+							    <div>{exercise.name}</div>
+							    { exercise.weight && <div>({exercise.weight} kg)</div> }
+							  </div>
+							  {exercise.image_url && (
+						      <Image
+						        src={exercise.image_url}
+						        width={150}
+						        height={100}
+						        alt={exercise.name}
+						        className="border-2 rounded-lg"
+						      />
+							  )}
+							</div>
+							{ exercise.rest &&
+								<div className="mt-2">Descanso: {exercise.rest}</div>
+							}
 						</div>
 		      ))}
+		      </div>
 				</div>
 			))}
 		</div>

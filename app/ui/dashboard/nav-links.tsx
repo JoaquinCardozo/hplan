@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  UserGroupIcon,
   HomeIcon,
+  DocumentIcon,
   DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -14,16 +14,16 @@ import clsx from 'clsx';
 // Depending on the size of the application, this would be stored in a database.
 const links = [
   { 
-    name: 'Home', 
+    name: 'Inicio', 
     href: '/dashboard', 
     icon: HomeIcon },
   {
-    name: 'Exercises',
+    name: 'Ejercicios',
     href: '/dashboard/exercises',
-    icon: UserGroupIcon,
+    icon: DocumentIcon,
   },
   { 
-    name: 'Workouts', 
+    name: 'Circuitos', 
     href: '/dashboard/workouts', 
     icon: DocumentDuplicateIcon 
   },
@@ -40,14 +40,14 @@ export default function NavLinks() {
             key={link.name}
             href={link.href}
             className={clsx(
-              'flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-black md:flex-none md:justify-start md:p-2 md:px-3',
+              'flex h-[48px] grow items-center justify-center gap-2 rounded-lg bg-gray-50 p-3 text-sm font-medium hover:bg-gray-300 hover:text-black sm:flex-none sm:justify-start sm:p-2 sm:px-3',
               {
-                'bg-sky-100 text-black': pathname === link.href,
+                'bg-gray-300 text-black': pathname === link.href,
               },
             )}
           >
             <LinkIcon className="w-6" />
-            <p className="hidden md:block">{link.name}</p>
+            <p className="hidden sm:block">{link.name}</p>
           </Link>
         );
       })}

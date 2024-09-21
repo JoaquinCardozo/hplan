@@ -76,7 +76,7 @@ export async function login(prevState: LoginFormState, formData: FormData) {
     const user = await getUserByEmail(email);
     if (!user) {
       return {
-        errors: { email: ['The user does not exists'] },
+        errors: { email: ['El usuario no existe'] },
         message: 'Credentials are not valid.',
       };
     }
@@ -84,7 +84,7 @@ export async function login(prevState: LoginFormState, formData: FormData) {
     const passwordsMatch = await bcrypt.compare(password, user.password);
     if (!passwordsMatch) {
       return {
-        errors: { password: ['Incorrect password'] },
+        errors: { password: ['Contraseña incorrecta'] },
         message: 'Credentials are not valid.',
       };
     }
@@ -335,7 +335,7 @@ export async function registerAthlete(prevState: RegisterAthleteFormState, formD
 const ExerciseFormSchema = z.object({
   id: z.string(),
   name: z.string()
-    .min(1, { message: 'Name is required and cannot be empty.' }),
+    .min(1, { message: 'El nombre no puede estar vacío' }),
   description: z.string(),
   image_url: z.string().nullable(),
   video_url: z.string().nullable(),

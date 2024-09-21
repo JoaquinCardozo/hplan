@@ -18,7 +18,6 @@ export default function CreateExerciseForm(){
 
   return (
     <form action={action}>
-
       <div className="mb-4">
         <label htmlFor="name" className="mb-2 block text-sm">
           Nombre

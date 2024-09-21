@@ -15,7 +15,11 @@ export default async function Page() {
 
   return (
     <main>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="text-lg">
+        ¡Bienvenido <span className="font-bold">{ userData.name }</span>!
+      </div>
+
+      {/*<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         { userRole === 'admin' ? (
           <AdminDashboard />
         ) : null}
@@ -27,7 +31,7 @@ export default async function Page() {
         { userRole === 'athlete' ? (
           <AthleteDashboard />
         ) : null}
-      </div>
+      </div>*/}
     </main>
   );
 }

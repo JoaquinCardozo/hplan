@@ -1,14 +1,13 @@
 import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
 import { Metadata } from 'next';
+import Logo from '@/app/ui/logo';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Acme Dashboard',
-    default: 'Acme Dashboard',
+    template: '%s | Mr. Fitness Coach',
+    default: 'Mr. Fitness Coach',
   },
-  description: 'The official Next.js Learn Dashboard built with App Router.',
-  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
 };
 
 export default function RootLayout({
@@ -18,7 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} antialiased h-screen flex flex-col`}>
+        <Logo />
+
         {children}
       </body>
     </html>
