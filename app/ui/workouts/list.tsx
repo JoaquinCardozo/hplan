@@ -31,13 +31,16 @@ export default async function WorkoutList({ query, currentPage} : { query: strin
 		        		<p className="text-sm mb-5">{workout.description}</p>
 		        }{ 
 		        	workout.workout_type == "rounds" && 
-		      			<p className="font-bold">{workout.workout_value} {workout.workout_value == 1 ? 'ronda' : 'rondas'}</p>
+		      			<p className="font-bold mb-5">{workout.workout_value} {workout.workout_value == 1 ? 'ronda' : 'rondas'}</p>
 		      	}{
 		      		workout.workout_type == "amrap" && 
-		      			<p className="font-bold">AMRAP {workout.workout_value}</p>
+		      			<p className="font-bold mb-5">AMRAP {workout.workout_value}</p>
 		      	}{
 							workout.workout_type == "emom" && 
-		      			<p className="font-bold">EMOM {workout.workout_value}</p>
+		      			<p className="font-bold mb-5">EMOM {workout.workout_value}</p>
+		      	}{
+							workout.workout_type == "other" && 
+		      			<p className="font-bold mb-5">{workout.workout_value}</p>
 		      	}
 		      </div>
 

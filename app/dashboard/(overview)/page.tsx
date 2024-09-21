@@ -15,7 +15,7 @@ export default async function Page() {
 
   return (
     <main>
-      <div className="text-lg">
+      <div className="text-lg smx:text-center">
         ¡Bienvenido <span className="font-bold">{ userData.name }</span>!
       </div>
 

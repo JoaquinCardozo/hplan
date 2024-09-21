@@ -204,16 +204,17 @@ export default function EditWorkoutForm({ workout, exerciseNames }: { workout: W
                 onChange={handleOptionChange}
                 defaultChecked={workout.workout_type === 'other'}
               />
-              <label htmlFor="other" className="ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
+              <label htmlFor="other" className="w-24 ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
                 Otro
               </label>
               { workoutType === 'other' && 
                 <input 
                   id="workout_value"
                   name="workout_value"
-                  type="hidden"
+                  type="text"
                   className="grow rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa el tiempo"
+                  placeholder="Ingresa el tipo de ejercicio"
+                  defaultValue={workout.workout_value}
                 />
               }
             </div>

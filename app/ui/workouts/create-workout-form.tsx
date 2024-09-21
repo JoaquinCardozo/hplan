@@ -185,16 +185,16 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                 className="h-4 w-4 border-gray-300"
                 onChange={handleOptionChange}
               />
-              <label htmlFor="other" className="ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
+              <label htmlFor="other" className="w-24 ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
                 Otro
               </label>
               { workoutType === 'other' && 
                 <input 
                   id="workout_value"
                   name="workout_value"
-                  type="hidden"
+                  type="text"
                   className="grow rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa el tiempo"
+                  placeholder="Ingresa el tipo de ejercicio"
                 />
               }
             </div>
