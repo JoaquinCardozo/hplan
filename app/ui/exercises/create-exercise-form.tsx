@@ -139,7 +139,7 @@ export default function CreateExerciseForm(){
         </div>
       </div>
 
-      <div className="mt-6 flex justify-end gap-4">
+      <div className="mt-6 flex justify-center gap-4">
         <Button type="submit">
           Crear ejercicio
         </Button>

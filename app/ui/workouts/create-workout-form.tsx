@@ -7,6 +7,7 @@ import { useFormState } from 'react-dom';
 import { useState } from 'react';
 import { createWorkout, CreateWorkoutState } from '@/app/lib/actions';
 import { ExerciseName, WorkoutExercise } from '@/app/lib/definitions';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: ExerciseName[] }){
   const initialState = { message: null, errors: {} };
@@ -29,6 +30,10 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
       }
     }
   }
+
+  const handleRemoveExercise = (indexToRemove: number) => {
+    setAddedExercises(addedExercises.filter((_, index) => index !== indexToRemove));
+  };
 
   async function formatDataAndCreateWorkout(prevState: CreateWorkoutState, formData: FormData) {
     const exerciseIds = formData.getAll('exercise_id');
@@ -98,7 +103,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
         }
       </div>
 
-        <div>
+        <div className="mt-10">
           <label htmlFor="workout_type" className="block text-sm">
             Tipo de circuito
           </label>
@@ -180,7 +185,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                 className="h-4 w-4 border-gray-300"
                 onChange={handleOptionChange}
               />
-              <label htmlFor="emom" className="ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
+              <label htmlFor="other" className="ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
                 Otro
               </label>
               { workoutType === 'other' && 
@@ -194,21 +199,6 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
               }
             </div>
           </div>
-        
-        {/*<div className="grow">
-          <label htmlFor="workout_value" className="block text-sm">
-            { workoutType === 'rounds' && "Rondas" }
-            { workoutType === 'amrap' && "Tiempo" }
-            { workoutType === 'emom' && "Tiempo" }
-          </label>
-          <input 
-            id="workout_value"
-            name="workout_value"
-            type="text"
-            className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
-            placeholder="Ingresa un valor"
-          />
-        </div>*/}
       </div>
       <div id="workout_value-error" aria-live="polite" aria-atomic="true">
         { state.errors?.workout_value && state.errors.workout_value.map((error: string) => (
@@ -217,7 +207,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
         }
       </div>
 
-      <div className="mb-4">
+      <div className="mt-10 mb-10">
         <label htmlFor="exercise" className="mb-2 block text-sm">
           Ejercicios
         </label>
@@ -240,62 +230,82 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
               ))
             }
           </select>
-          { selectedExerciseId && 
-            <button type="button" className="rounded-md border p-2 hover:bg-gray-100 text-sm font-medium text-gray-600"
-            onClick={handleAddExercise}>
+          <button type="button" 
+            className={`rounded-md border p-2 text-sm font-medium 
+              ${selectedExerciseId ? 'hover:bg-gray-100 text-gray-600' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+            onClick={handleAddExercise}
+            disabled={!selectedExerciseId}>
               <span>Agregar ejercicio</span>
-            </button>
-          }
+          </button>
         </div>
         <div className="mt-4">
           {addedExercises.map((exercise, index) => (
             <div key={index} className="mb-4 p-4 border rounded-md shadow-sm bg-white">
-              <h3 className="text-lg font-medium">{exercise.name}</h3>
+              <div className="flex flex-row items-center">
+                <div className="text-lg font-medium" >{exercise.name}</div>
+                <div className="grow text-right">
+                  <button
+                    type="button"
+                    className="rounded-md border p-2 hover:bg-gray-100"
+                    onClick={() => handleRemoveExercise(index)}
+                  >
+                    <span className="sr-only">Delete</span><TrashIcon className="w-5" />
+                  </button>
+                </div>
+              </div>
               <input id="exercise_id" name="exercise_id" type="hidden" defaultValue={exercise.id} />
               <input id="position" name="position" type="hidden" defaultValue={index} />
-              <div className="mt-2">
-                <label htmlFor="reps" className="mb-2 block text-sm">Repeticiones: </label>
-                <input
-                  id="reps"
-                  name="reps"
-                  type="text"
-                  className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa la cantidad de repeticiones"
-                />
+              <div className="flex flex-row gap-2">
+                <div className="grow mt-2">
+                  <label htmlFor="reps" className="mb-2 block text-sm">Repeticiones: </label>
+                  <input
+                    id="reps"
+                    name="reps"
+                    type="text"
+                    className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+                    placeholder="Ingresa las repeticiones"
+                  />
+                </div>
+                <div className="grow mt-2">
+                  <label htmlFor="weight" className="mb-2 block text-sm">Peso: </label>
+                  <input
+                    id="weight"
+                    name="weight"
+                    type="text"
+                    className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+                    placeholder="Ingresa el peso"
+                  />
+                </div>
+                <div className="grow mt-2">
+                  <label htmlFor="rest" className="mb-2 block text-sm">Descanso: </label>
+                  <input
+                    id="rest"
+                    name="rest"
+                    type="text"
+                    className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+                    placeholder="Ingresa el descanso después del ejercicio"
+                  />
+                </div>
               </div>
-              <div className="mt-2">
-                <label htmlFor="weight" className="mb-2 block text-sm">Peso: </label>
-                <input
-                  id="weight"
-                  name="weight"
-                  type="text"
-                  className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa el peso"
-                />
-              </div>
-              <div className="mt-2">
+              <div className="grow mt-2">
                 <label htmlFor="notes" className="mb-2 block text-sm">Notas: </label>
                 <input
                   id="notes"
                   name="notes"
                   type="text"
                   className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Notas adicionales"
+                  placeholder="Ingresa notas adicionales"
                 />
               </div>
-              <div className="mt-2">
-                <label htmlFor="rest" className="mb-2 block text-sm">Descanso: </label>
-                <input
-                  id="rest"
-                  name="rest"
-                  type="text"
-                  className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Tiempo de descanso"
-                />
-              </div>
+              
             </div>
           ))}
         </div>
+        { addedExercises.length == 0 &&
+          <div className="mb-4 p-4 border rounded-md shadow-sm bg-white">
+            <p className="text-sm text-gray-500 text-center">No hay ejercicios</p>
+          </div>
+        }
       </div>
 
       <div id="workout_exercises-error" aria-live="polite" aria-atomic="true">
@@ -305,13 +315,16 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
         }
       </div>
 
-      <div className="mt-4 flex justify-center">
+      <div className="mt-6 flex justify-center gap-4">
         <Button type="submit">
-          Crear entrenamiento
+          Crear circuito
         </Button>
+        <Link href="/dashboard/workouts" className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
+          Cancelar
+        </Link>
       </div>
       <div aria-live="polite" aria-atomic="true">
-        {state.message && <p className="mt-2 text-sm text-green-500"> { state.message } </p>}
+        {state.message && <p className="mt-2 text-sm text-red-500"> { state.message } </p>}
       </div>
     </form>
   );

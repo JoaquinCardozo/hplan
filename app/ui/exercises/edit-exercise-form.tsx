@@ -150,7 +150,7 @@ export default function EditExerciseForm({ exercise }: { exercise: Exercise }){
         }
       </div>
 
-      <div className="mt-6 flex justify-end gap-4">
+      <div className="mt-6 flex justify-center gap-4">
         <Button type="submit">
           Editar ejercicio
         </Button>
