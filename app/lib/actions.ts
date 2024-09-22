@@ -467,7 +467,7 @@ const WorkoutFormSchema = z.object({
   description: z.string(),
   workout_type: z.string().min(1, { message: 'Elegir un tipo de circuito.' }),
   workout_value: z.string(),
-  workout_exercises: z.array(WorkoutExerciseSchema).min(1, { message: 'Agregar al memnos un ejercicio.' }),
+  workout_exercises: z.array(WorkoutExerciseSchema).min(1, { message: 'Agregar al menos un ejercicio.' }),
 });
 const CreateWorkoutFormSchema = WorkoutFormSchema.omit({ id: true });
 

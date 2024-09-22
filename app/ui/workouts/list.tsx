@@ -44,11 +44,12 @@ export default async function WorkoutList({ query, currentPage} : { query: strin
 		      	}
 		      </div>
 
-		      <div className="flex flex-col gap-1">
+		      <div className="flex flex-col gap-1 smx:gap-3">
+
 			      { workout.exercises?.map((exercise : WorkoutExercise) => (
 			      	<div key={workout.id + exercise.position + exercise.exercise_id}>
-				      	<div className="flex flex-row justify-between items-center space-x-4">
-								  <div className="flex-grow flex space-x-4">
+				      	<div className="flex flex-row justify-between items-center gap-4">
+								  <div className="flex-grow flex gap-4 smx:flex-col smx:gap-1">
 								    <div>{exercise.reps}</div>
 								    <div>{exercise.name}</div>
 								    { exercise.weight && <div>({exercise.weight} kg)</div> }
