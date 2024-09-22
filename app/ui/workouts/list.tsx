@@ -44,30 +44,34 @@ export default async function WorkoutList({ query, currentPage} : { query: strin
 		      	}
 		      </div>
 
-		      <div className="flex flex-col gap-2">
-		      {workout.exercises?.map((exercise : WorkoutExercise) => (
-		      	<div key={workout.id + exercise.position + exercise.exercise_id}>
-			      	<div className="flex flex-row justify-between items-center space-x-4">
-							  <div className="flex-grow flex space-x-4">
-							    <div>{exercise.reps}</div>
-							    <div>{exercise.name}</div>
-							    { exercise.weight && <div>({exercise.weight} kg)</div> }
-							  </div>
-							  {exercise.image_url && (
-						      <Image
-						        src={exercise.image_url}
-						        width={150}
-						        height={100}
-						        alt={exercise.name}
-						        className="border-2 rounded-lg"
-						      />
-							  )}
+		      <div className="flex flex-col gap-1">
+			      { workout.exercises?.map((exercise : WorkoutExercise) => (
+			      	<div key={workout.id + exercise.position + exercise.exercise_id}>
+				      	<div className="flex flex-row justify-between items-center space-x-4">
+								  <div className="flex-grow flex space-x-4">
+								    <div>{exercise.reps}</div>
+								    <div>{exercise.name}</div>
+								    { exercise.weight && <div>({exercise.weight} kg)</div> }
+								  </div>
+								  {exercise.image_url ? (
+							      <Image
+							        src={exercise.image_url}
+							        width={150}
+							        height={100}
+							        alt={exercise.name}
+							        className="border-2 rounded-lg"
+							      />
+								  ): (
+						       	<div className="w-[150px] h-[100px] border-2 rounded-lg flex items-center justify-center">
+						          <span className="text-gray-500">Sin imagen</span>
+						        </div>
+						      )}
+								</div>
+								{ exercise.rest &&
+									<div className="mt-2">Descanso: {exercise.rest}</div>
+								}
 							</div>
-							{ exercise.rest &&
-								<div className="mt-2">Descanso: {exercise.rest}</div>
-							}
-						</div>
-		      ))}
+			      ))}
 		      </div>
 				</div>
 			))}

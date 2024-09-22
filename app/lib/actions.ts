@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import type { User, Gym } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
+import { put } from '@vercel/blob';
  
 export default async function getUserByEmail(email: string): Promise<User | undefined> {
   try {
@@ -337,7 +338,7 @@ const ExerciseFormSchema = z.object({
   name: z.string()
     .min(1, { message: 'El nombre no puede estar vacío' }),
   description: z.string(),
-  image_url: z.string().nullable(),
+  image: z.instanceof(File).nullable(),
   video_url: z.string().nullable(),
 });
 const CreateExerciseFormSchema = ExerciseFormSchema.omit({ id: true });
@@ -356,7 +357,7 @@ export async function createExercise(prevState: CreateExerciseState, formData: F
   const validatedFields = CreateExerciseFormSchema.safeParse({
     name: formData.get('name'),
     description: formData.get('description'),
-    image_url: formData.get('image_url'),
+    image: formData.get('image'),
     video_url: formData.get('video_url'),
   });
   if (!validatedFields.success) {
@@ -365,7 +366,18 @@ export async function createExercise(prevState: CreateExerciseState, formData: F
       message: 'Failed to Create Exercise.',
     };
   }
-  const { name, description, image_url, video_url } = validatedFields.data;
+  let { name, description, image, video_url } = validatedFields.data;
+  if (video_url) {
+    video_url = 'https://www.youtube.com/embed/' + video_url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+
+  let image_url = "";
+  if (image && image.size && image.size > 0) {
+    const blob = await put("exercise_images/" + image.name, image, {
+      access: 'public',
+    });
+    image_url = blob.url;
+  } 
 
   try {
     await sql`
@@ -384,7 +396,7 @@ export async function updateExercise(id: string, prevState: CreateExerciseState,
   const validatedFields = CreateExerciseFormSchema.safeParse({
     name: formData.get('name'),
     description: formData.get('description'),
-    image_url: formData.get('image_url'),
+    image: formData.get('image'),
     video_url: formData.get('video_url'),
   });
  
@@ -394,14 +406,33 @@ export async function updateExercise(id: string, prevState: CreateExerciseState,
       message: 'Failed to Update Exercise.',
     };
   } 
-  const { name, description, image_url, video_url } = validatedFields.data;
+  let { name, description, image, video_url } = validatedFields.data;
+  if (video_url) {
+    video_url = 'https://www.youtube.com/embed/' + video_url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+
+  let image_url = "";
+  if (image && image.size && image.size > 0) {
+    const blob = await put("exercise_images/" + image.name, image, {
+      access: 'public',
+    });
+    image_url = blob.url;
+  }
  
   try {
-    await sql`
-      UPDATE exercises
-      SET name = ${name}, description = ${description}, image_url = ${image_url}, video_url = ${video_url}
-      WHERE id = ${id}
-    `;
+    if (image && image.size && image.size > 0) {
+      await sql`
+        UPDATE exercises
+        SET name = ${name}, description = ${description}, image_url = ${image_url}, video_url = ${video_url}
+        WHERE id = ${id}
+      `;  
+    } else {
+      await sql`
+        UPDATE exercises
+        SET name = ${name}, description = ${description}, video_url = ${video_url}
+        WHERE id = ${id}
+      `;
+    }
   } catch (error) {
     return { message: 'Database Error: Failed to Update Exercise.' };
   }

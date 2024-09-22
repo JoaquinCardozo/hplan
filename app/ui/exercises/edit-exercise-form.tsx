@@ -23,6 +23,20 @@ export default function EditExerciseForm({ exercise }: { exercise: Exercise }){
     setPreviewVideoUrl(exercise.video_url);
   }, [exercise.image_url, exercise.video_url]);
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleVideoPreview = (link : string) => {
+    return 'https://www.youtube.com/embed/' + link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+
   return (
     <form action={action}>
 
@@ -72,40 +86,40 @@ export default function EditExerciseForm({ exercise }: { exercise: Exercise }){
         <label htmlFor="image_url" className="mb-2 block text-sm">
           Imagen
         </label>
-        <div className="flex gap-4">
+        <label className="rounded-md border p-2 hover:bg-gray-100 text-sm font-medium text-gray-600 cursor-pointer">
+          <span>Seleccionar imagen</span>
           <input 
-            id="image_url"
-            name="image_url"
-            type="text"
-            placeholder="Ingresa el enlace a la imagen"
-            defaultValue={exercise.image_url}
-            className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
-            aria-describedby="image_url-error"
-            ref={imageUrlRef}
+            type="file" 
+            id="image" 
+            name="image" 
+            className="hidden"
+            accept="image/*"
+            onChange={handleImageUpload}
           />
-          <button type="button" className="rounded-md border p-2 hover:bg-gray-100 text-sm font-medium text-gray-600"
-          onClick={()=> {
-            if (imageUrlRef.current)
-              setPreviewImageUrl(imageUrlRef.current.value);
-          }}>
-            <span>Preview</span>
-          </button>
-        </div>
-        {previewImageUrl && (
-          <Image
-            src={previewImageUrl}
-            width={150}
-            height={100}
-            alt={exercise.name}
-            className="mt-2 border-2 rounded-lg"
-          />
+        </label>
+        {selectedFile && (
+          <div className="flex flex-col mt-3">
+            <p className="mt-2 text-sm text-gray-600">{selectedFile.name}</p>
+            <Image
+              src={URL.createObjectURL(selectedFile)}
+              width={150}
+              height={100}
+              alt="Preview"
+              className="mt-2 border-2 rounded-lg"
+            />
+          </div>
         )}
-      </div>
-      <div id="image_url-error" aria-live="polite" aria-atomic="true">
-        { state.errors?.image_url && state.errors.image_url.map((error: string) => (
-            <p key={error}> { error } </p>
-          ))
-        }
+        {!selectedFile && previewImageUrl && (
+          <div className="flex flex-col mt-3">
+            <Image
+              src={previewImageUrl}
+              width={150}
+              height={100}
+              alt="Preview"
+              className="mt-2 border-2 rounded-lg"
+            />
+          </div>
+        )}
       </div>
 
       <div className="mb-4">
@@ -135,7 +149,7 @@ export default function EditExerciseForm({ exercise }: { exercise: Exercise }){
           <iframe 
             width="150" 
             height="100" 
-            src={previewVideoUrl}
+            src={handleVideoPreview(previewVideoUrl)}
             title="Preview"
             className="mt-2 border-2 rounded-lg"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
