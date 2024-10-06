@@ -18,10 +18,10 @@ export type Gym = {
   name: string;
 };
 
-export type GymCoach = {
-  coachId: string;
-  gymId: string;
-};
+    export type GymCoach = {
+      coachId: string;
+      gymId: string;
+    };
 
 
 // PLANS
@@ -38,35 +38,66 @@ export type Workout = {
   id: string;
   name: string;
   description: string;
-  workout_type: 'amrap' | 'emom' | 'rounds';
+  workout_type: 'amrap' | 'emom' | 'rounds' | 'other';
   workout_value: string;
+  // exercises[]
 };
 
-export type WorkoutExercise = {
-  workout_id: string;
-  exercise_id: string;
-  name: string;
-  position: number;
-  reps: string;
-  weight: string;
-  rest: string;
-  notes: string;
-  image_url: string;
-};
+    export type WorkoutExercise = {
+      workout_id: string;
+      exercise_id: string;
+      name: string;
+      position: number;
+      reps: string;
+      weight: string;
+      rest: string;
+      notes: string;
+      image_url: string;
+    };
 
-export type ExerciseName = {
-  id: string;
-  name: string;
-}
+    export type ExerciseName = {
+      id: string;
+      name: string;
+    }
 
-export type WorkoutWithExercises = {
+    export type WorkoutWithExercises = {
+      id: string;
+      name: string;
+      description: string;
+      workout_type: 'amrap' | 'emom' | 'rounds' | 'other';
+      workout_value: string;
+      exercises: WorkoutExercise[];
+    }
+
+export type Plan = {
   id: string;
   name: string;
   description: string;
-  workout_type: 'amrap' | 'emom' | 'rounds' | 'other';
-  workout_value: string;
-  exercises: WorkoutExercise[];
+  sessions: Session[];
 }
+
+export type Session = {
+  id: string;
+  name: string;
+  description: string;
+  plan_id: string;
+  blocks: SessionBlock[];
+}
+
+export type SessionBlock = {
+  id: string;
+  name: string;
+  description: string;
+  session_id: string;
+  // workouts[]
+}
+
+    export type SessionBlockWorkouts = {
+      session_block_id: string;
+      workout_id: string;
+    }
+
+
 
 // export type PlanBlock = {
 //   id: string;

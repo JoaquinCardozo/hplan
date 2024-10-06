@@ -4,6 +4,7 @@ import {
   HomeIcon,
   DocumentIcon,
   DocumentDuplicateIcon,
+  ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -16,16 +17,22 @@ const links = [
   { 
     name: 'Inicio', 
     href: '/dashboard', 
-    icon: HomeIcon },
-  {
-    name: 'Ejercicios',
-    href: '/dashboard/exercises',
-    icon: DocumentIcon,
+    icon: HomeIcon 
+  },
+  { 
+    name: 'Planes', 
+    href: '/dashboard/plans', 
+    icon: ClipboardDocumentIcon 
   },
   { 
     name: 'Circuitos', 
     href: '/dashboard/workouts', 
     icon: DocumentDuplicateIcon 
+  },
+  {
+    name: 'Ejercicios',
+    href: '/dashboard/exercises',
+    icon: DocumentIcon,
   },
 ];
 

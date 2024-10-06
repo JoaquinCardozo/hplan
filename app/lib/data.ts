@@ -11,6 +11,7 @@ import {
   ExerciseName,
   WorkoutWithExercises,
   Revenue,
+  Plan
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -307,6 +308,101 @@ export async function fetchWorkoutById(id: string) {
     throw new Error('Failed to fetch workout');
   }
 }
+
+// PLANS
+
+const PLANS_PER_PAGE = 20;
+export async function fetchFilteredPlansByPage(query: string, currentPage: number){
+  const page_offset = (currentPage - 1) * PLANS_PER_PAGE;
+  noStore();
+  try {
+    const plans = await sql<Exercise>`
+      SELECT
+        id, name, description
+      FROM plans
+      WHERE
+        name ILIKE ${`%${query}%`} OR
+        description ILIKE ${`%${query}%`}
+      ORDER BY name ASC
+      LIMIT ${PLANS_PER_PAGE} OFFSET ${page_offset}
+    `;
+    
+    return plans.rows;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch plans');
+  }
+}
+
+export async function fetchPlansTotalPages(query: string){
+  noStore();
+  try {
+    const count = await sql`
+      SELECT COUNT(*)
+      FROM plans
+      WHERE
+        name ILIKE ${`%${query}%`} OR
+        description ILIKE ${`%${query}%`}
+    `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / PLANS_PER_PAGE);
+    return totalPages;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of plans');
+  }
+}
+
+export async function fetchPlanById(id: string){
+  noStore();
+  try {
+    const data = await sql`
+      SELECT
+        plans.id,
+        plans.name,
+        plans.description,
+        sessions.id AS session_id,
+        sessions.name AS session_name,
+        sessions.description AS session_description
+      FROM plans
+      LEFT JOIN sessions ON sessions.plan_id = plans.id
+      WHERE plans.id = ${id};
+    `;
+  
+    if (data.rows.length === 0) {
+      return null;
+    }
+
+    const planWithSessions: Plan = {
+      id: data.rows[0].id,
+      name: data.rows[0].name,
+      description: data.rows[0].description,
+      sessions: []
+    };
+
+    data.rows.forEach(row => {
+      if (row.session_id) {
+        planWithSessions.sessions.push({
+          id: row.session_id,
+          name: row.session_name,
+          description: row.session_description,
+          plan_id: data.rows[0].id,
+          blocks: []
+        });
+      }
+    });
+
+    return planWithSessions;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch plan');
+  }
+}
+
+
 
 // OLD
 

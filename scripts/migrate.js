@@ -139,6 +139,77 @@ async function migrate(client) {
     console.error('Error migrating database:', error);
     throw error;
   }
+
+
+  // Create the "plans" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS plans (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255),
+        description VARCHAR(255)
+      );
+    `;
+
+    console.log(`Created "plans" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Create the "sessions" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255),
+        description VARCHAR(255),
+        plan_id UUID NOT NULL,
+        FOREIGN KEY (plan_id) REFERENCES plans(id)
+      );
+    `;
+
+    console.log(`Created "sessions" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Create the "session_blocks" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS session_blocks (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255),
+        description VARCHAR(255),
+        session_id UUID NOT NULL,
+        FOREIGN KEY (session_id) REFERENCES sessions(id)
+      );
+    `;
+
+    console.log(`Created "session_block" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Create the "session_blocks_workouts" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS session_blocks_workouts (
+        session_block_id UUID NOT NULL,
+        workout_id UUID NOT NULL,
+        PRIMARY KEY (session_block_id, workout_id),
+        FOREIGN KEY (session_block_id) REFERENCES session_blocks(id),
+        FOREIGN KEY (workout_id) REFERENCES workouts(id)
+      );
+    `;
+
+    console.log(`Created "session_blocks_workouts" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
 }
 
 async function main() {

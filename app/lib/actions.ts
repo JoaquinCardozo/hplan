@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { sql, db } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type { User, Gym } from '@/app/lib/definitions';
+import type { User, Gym, Session } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 import { put } from '@vercel/blob';
@@ -599,6 +599,135 @@ export async function deleteWorkout(id: string) {
   redirect('/dashboard/workouts');
 }
 
+
+// PLANS
+
+const PlanFormSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
+  description: z.string()
+});
+const CreatePlanFormSchema = PlanFormSchema.omit({ id: true });
+
+export type CreatePlanState = {
+  errors?: {
+    name?: string[];
+    description?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createPlan() {
+  let id;
+
+  try {
+    const plan = await sql`
+      INSERT INTO plans (name)
+      VALUES ('Nuevo plan')
+      RETURNING id
+    `;
+
+    id = plan.rows[0].id;
+  } catch (error){
+    console.log(error);
+    return { message: 'Database Error: Failed to Create Plan' };
+  }
+
+  revalidatePath('/dashboard/plans');
+  redirect('/dashboard/plans/' + id + '/edit');
+}
+
+export async function updatePlan(id: string, prevState: CreatePlanState, formData: FormData) {
+  const validatedFields = CreatePlanFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description')
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Update Exercise.',
+    };
+  } 
+  const { name, description } = validatedFields.data;
+
+  try {
+    await sql`
+      UPDATE plans
+      SET name = ${name}, description = ${description}
+      WHERE id = ${id}
+    `;
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Plan.' };
+  }
+ 
+  revalidatePath('/dashboard/plans');
+  redirect('/dashboard/plans');
+}
+
+export async function deletePlan(id: string) {
+  try {
+    await sql`DELETE FROM plans WHERE id = ${id}`;
+      
+  } catch (error){
+    return { message: 'Database Error: Failed to Delete Plan' };
+  }
+
+  revalidatePath('/dashboard/plans');
+  redirect('/dashboard/plans');
+}
+
+const SessionFormSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
+  description: z.string().nullable(),
+  plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' })
+});
+const CreateSessionFormSchema = SessionFormSchema.omit({ id: true });
+
+export async function createSession(session: Session) {
+  const validatedFields = CreateSessionFormSchema.safeParse({
+    name: session.name,
+    description: session.description,
+    plan_id: session.plan_id
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Create Session.',
+    };
+  } 
+  const { name, plan_id } = validatedFields.data;
+  let id;
+
+  try {
+    const session = await sql`
+      INSERT INTO sessions (plan_id, name)
+      VALUES (${plan_id}, ${name})
+      RETURNING id
+    `;
+
+    id = session.rows[0].id;
+    return id;
+
+  } catch (error){
+    console.log(error);
+    return { message: 'Database Error: Failed to Create Session' };
+  }
+
+  revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+}
+
+export async function deleteSession(id: string) {
+  try {
+    const result = await sql`DELETE FROM sessions WHERE id = ${id}`;
+    
+    return result.rows[0].rowCount == 1;
+  } catch (error){
+    return { message: 'Database Error: Failed to Delete Plan' };
+  }
+}
 
 // OLD
 
