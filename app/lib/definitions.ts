@@ -38,9 +38,9 @@ export type Workout = {
   id: string;
   name: string;
   description: string;
-  workout_type: 'amrap' | 'emom' | 'rounds' | 'other';
+  workout_type: string;
   workout_value: string;
-  // exercises[]
+  exercises: WorkoutExercise[];
 };
 
     export type WorkoutExercise = {
@@ -53,20 +53,12 @@ export type Workout = {
       rest: string;
       notes: string;
       image_url: string;
+      video_url: string;
     };
 
     export type ExerciseName = {
       id: string;
       name: string;
-    }
-
-    export type WorkoutWithExercises = {
-      id: string;
-      name: string;
-      description: string;
-      workout_type: 'amrap' | 'emom' | 'rounds' | 'other';
-      workout_value: string;
-      exercises: WorkoutExercise[];
     }
 
 export type Plan = {
@@ -81,6 +73,7 @@ export type Session = {
   name: string;
   description: string;
   plan_id: string;
+  position: number;
   blocks: SessionBlock[];
 }
 
@@ -89,36 +82,20 @@ export type SessionBlock = {
   name: string;
   description: string;
   session_id: string;
-  // workouts[]
+  plan_id: string;
+  position: number;
+  workouts: SessionBlockWorkout[];
 }
 
-    export type SessionBlockWorkouts = {
-      session_block_id: string;
-      workout_id: string;
-    }
-
-
-
-// export type PlanBlock = {
-//   id: string;
-//   name: string;
-//   session_id: string;
-// }
-
-// export type PlanBlockRest = {
-//   block_id: string;
-//   rest_type: 'seconds' | 'minutes';
-//   rest_value: number;
-// }
-
-// export type PlanBlockWorkout = {
-//   block_id: string;
-//   workout_id: string;
-// }
-
-
-
-
+export type SessionBlockWorkout = {
+  id: string;
+  name: string;
+  description: string;
+  workout_type: string;
+  workout_value: string;
+  position: number;
+  exercises: WorkoutExercise[];
+};
 
 
 // OLD

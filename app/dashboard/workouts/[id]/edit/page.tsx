@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           },
         ]}
       />
-      <EditWorkoutForm workout={workout} exerciseNames={exercisesNames} />
+      {/*<EditWorkoutForm workout={workout} exerciseNames={exercisesNames} editCallback={()=> {}} cancelCallback={()=> {}}/>*/}
     </main>
   );
 }

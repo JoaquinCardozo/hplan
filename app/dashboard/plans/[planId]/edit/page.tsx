@@ -3,8 +3,8 @@ import Breadcrumbs from '@/app/ui/exercises/breadcrumbs';
 import { fetchPlanById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
  
-export default async function Page({ params }: { params: { id: string } }) {
-  const id = params.id;
+export default async function Page({ params }: { params: { planId: string } }) {
+  const id = params.planId;
   const plan = await fetchPlanById(id);
 
   if (!plan) {
@@ -18,7 +18,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           { label: 'Planes', href: '/dashboard/plans' },
           {
             label: 'Editar plan',
-            href: `/dashboard/planes/${id}/edit`,
+            href: `/dashboard/plans/${id}/edit`,
             active: true,
           },
         ]}

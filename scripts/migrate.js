@@ -175,6 +175,19 @@ async function migrate(client) {
     throw error;
   }
 
+  // Add column "position" to "sessions" table
+  try {
+    await client.sql`
+      ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS position INT NOT NULL DEFAULT 0;
+    `;
+    
+    console.log('Column "position" added to "sessions" table');
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
   // Create the "session_blocks" table if it doesn't exist
   try {
     await client.sql`
@@ -193,6 +206,19 @@ async function migrate(client) {
     throw error;
   }
 
+  // Add column "position" to "session_blocks" table
+  try {
+    await client.sql`
+      ALTER TABLE session_blocks
+      ADD COLUMN IF NOT EXISTS position INT NOT NULL DEFAULT 0;
+    `;
+    
+    console.log('Column "position" added to "session_blocks" table');
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
   // Create the "session_blocks_workouts" table if it doesn't exist
   try {
     await client.sql`
@@ -206,6 +232,35 @@ async function migrate(client) {
     `;
 
     console.log(`Created "session_blocks_workouts" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Add column "position" to "session_blocks_workouts" table
+  try {
+    await client.sql`
+      ALTER TABLE session_blocks_workouts
+      ADD COLUMN IF NOT EXISTS position INT NOT NULL DEFAULT 0;
+    `;
+    
+    console.log('Column "position" added to "session_blocks_workouts" table');
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Delete old primary key from "session_blocks_workouts" and creates a new one using position
+  try {
+    await client.sql`
+      ALTER TABLE session_blocks_workouts
+      DROP CONSTRAINT IF EXISTS session_blocks_workouts_pkey;
+
+      ALTER TABLE session_blocks_workouts
+      ADD PRIMARY KEY (session_block_id, position);
+    `;
+    
+    console.log('Primary key updated on "session_blocks_workouts" table');
   } catch (error) {
     console.error('Error migrating database:', error);
     throw error;

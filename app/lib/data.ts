@@ -9,9 +9,10 @@ import {
   Gym,
   Exercise,
   ExerciseName,
-  WorkoutWithExercises,
+  Workout,
   Revenue,
-  Plan
+  Plan,
+  Session
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -259,6 +260,7 @@ export async function fetchWorkoutById(id: string) {
         workouts.workout_value,
         exercises.name AS exercise_name,
         exercises.image_url AS exercise_image_url,
+        exercises.video_url AS exercise_video_url,
         workout_exercises.exercise_id,
         workout_exercises.position,
         workout_exercises.reps,
@@ -275,7 +277,7 @@ export async function fetchWorkoutById(id: string) {
       return null;
     }
 
-    const workoutWithExercises: WorkoutWithExercises = {
+    const workoutWithExercises: Workout = {
       id: data.rows[0].id,
       name: data.rows[0].name,
       description: data.rows[0].description,
@@ -296,7 +298,8 @@ export async function fetchWorkoutById(id: string) {
           weight: row.weight,
           rest: row.rest,
           notes: row.notes,
-          image_url: row.exercise_image_url
+          image_url: row.exercise_image_url,
+          video_url: row.exercise_video_url
         });
       }
     });
@@ -365,7 +368,8 @@ export async function fetchPlanById(id: string){
         plans.description,
         sessions.id AS session_id,
         sessions.name AS session_name,
-        sessions.description AS session_description
+        sessions.description AS session_description,
+        sessions.position AS session_position
       FROM plans
       LEFT JOIN sessions ON sessions.plan_id = plans.id
       WHERE plans.id = ${id};
@@ -388,6 +392,7 @@ export async function fetchPlanById(id: string){
           id: row.session_id,
           name: row.session_name,
           description: row.session_description,
+          position: row.session_position,
           plan_id: data.rows[0].id,
           blocks: []
         });
@@ -402,6 +407,162 @@ export async function fetchPlanById(id: string){
   }
 }
 
+export async function fetchSessionById(id: string) {
+  noStore();
+  try {
+    const data = await sql`
+      SELECT
+        sessions.id,
+        sessions.name,
+        sessions.description,
+        sessions.plan_id,
+        sessions.position,
+        session_blocks.id AS block_id,
+        session_blocks.name AS block_name,
+        session_blocks.description AS block_description,
+        session_blocks.position AS block_position,
+        session_blocks_workouts.position AS workout_position,
+        workouts.id AS workout_id,
+        workouts.workout_type AS workout_type,
+        workouts.description AS workout_description,
+        workout_exercises.exercise_id AS exercise_id,
+        workout_exercises.position AS exercise_position,
+        workout_exercises.reps AS exercise_reps,
+        workout_exercises.weight AS exercise_weight,
+        workout_exercises.notes AS exercise_notes,
+        workout_exercises.rest AS exercise_rest,
+        exercises.name AS exercise_name,
+        exercises.image_url AS exercise_image_url,
+        exercises.video_url AS exercise_video_url
+      FROM sessions
+      LEFT JOIN session_blocks ON session_blocks.session_id = sessions.id
+      LEFT JOIN session_blocks_workouts ON session_blocks_workouts.session_block_id = session_blocks.id
+      LEFT JOIN workouts ON session_blocks_workouts.workout_id = workouts.id
+      LEFT JOIN workout_exercises ON workout_exercises.workout_id = workouts.id
+      LEFT JOIN exercises ON exercises.id = workout_exercises.exercise_id
+      WHERE sessions.id = ${id};
+    `;
+  
+    if (data.rows.length === 0) {
+      return null;
+    }
+
+    // Crear objeto de la sesión
+    const sessionWithBlocks: Session = {
+      id: data.rows[0].id,
+      name: data.rows[0].name,
+      description: data.rows[0].description,
+      position: data.rows[0].position,
+      plan_id: data.rows[0].plan_id,
+      blocks: []
+    };
+
+    // Usamos un mapa auxiliar para organizar los bloques y evitar duplicados
+    const blockMap = new Map();
+    const workoutMap = new Map();
+
+    data.rows.forEach(row => {
+      // Si existe el bloque
+      if (row.block_id) {
+        // Si el bloque ya está en el mapa, simplemente obtenlo
+        let block = blockMap.get(row.block_id);
+
+        if (!block) {
+          // Si no existe, creamos el bloque y lo añadimos al mapa
+          block = {
+            id: row.block_id,
+            name: row.block_name,
+            description: row.block_description,
+            position: row.block_position,
+            session_id: row.id,
+            workouts: []
+          };
+          blockMap.set(row.block_id, block);
+          sessionWithBlocks.blocks.push(block);
+        }
+
+        // Si hay un workout asociado, lo añadimos al bloque
+        if (row.workout_id) {
+          let workout = workoutMap.get(row.workout_id);
+
+          if (!workout) {
+            workout = {
+              id: row.workout_id,
+              workout_type: row.workout_type,
+              description: row.workout_description,
+              position: row.workout_position,
+              exercises: []
+            };
+            workoutMap.set(row.workout_id, workout);
+            block.workouts.push(workout);
+          }
+
+          // Si hay ejercicios asociados al workout, los añadimos
+          if (row.exercise_id) {
+            workout.exercises.push({
+              exercise_id: row.exercise_id,
+              name: row.exercise_name,
+              position: row.exercise_position,
+              reps: row.exercise_reps,
+              weight: row.exercise_weight,
+              notes: row.exercise_notes,
+              rest: row.exercise_rest,
+              image_url: row.exercise_image_url,
+              video_url: row.exercise_video_url
+            });
+          }
+        }
+      }
+    });
+
+    return sessionWithBlocks;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch session');
+  }
+}
+
+// export async function fetchBlockWorkoutsById(id: string){
+//   noStore();
+//   try {
+//     const data = await sql`
+//       SELECT
+//         workouts.id AS workout_id,
+//         workouts.workout_type AS workout_type
+//       FROM session_blocks_workouts
+//       LEFT JOIN workouts ON session_blocks_workouts.workout_id = workouts.id
+//       WHERE session_blocks_workouts.session_block_id = ${id};
+//     `;
+  
+//     if (data.rows.length === 0) {
+//       return null;
+//     }
+
+//     const blockWithWorkouts: SessionBlock = {
+//       name: data.rows[0].name,
+//       description: data.rows[0].description,
+//       workouts: []
+//     };
+
+//     data.rows.forEach(row => {
+//       if (row.workout_id) {
+//         blockWithWorkouts.workouts.push({
+//           id: row.workout_id,
+//           type: row.workout_type,
+//         });
+//       }
+//     });
+
+//     console.log(blockWithWorkouts);
+
+//     return blockWithWorkouts;
+
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch block');
+//   }
+// }
 
 
 // OLD

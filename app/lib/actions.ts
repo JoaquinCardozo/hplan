@@ -4,11 +4,17 @@ import { z } from 'zod';
 import { sql, db } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type { User, Gym, Session } from '@/app/lib/definitions';
+import type { User, Gym, Session, SessionBlock } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 import { put } from '@vercel/blob';
  
+
+export type FormState = {
+  errors?: string[];
+  message?: string | null;
+};
+
 export default async function getUserByEmail(email: string): Promise<User | undefined> {
   try {
     const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
@@ -455,7 +461,7 @@ export async function deleteExercise(id: string) {
 
 const WorkoutExerciseSchema = z.object({
   exercise_id: z.string(),
-  position: z.number(),
+  position: z.coerce.number(),
   reps: z.string().min(1, { message: 'Ingresar la cantidad de repeticiones.' }),
   weight: z.string(),
   rest: z.string(),
@@ -463,10 +469,10 @@ const WorkoutExerciseSchema = z.object({
 });
 const WorkoutFormSchema = z.object({
   id: z.string(),
-  name: z.string(),
-  description: z.string(),
+  name: z.string().nullable(),
+  description: z.string().nullable(),
   workout_type: z.string().min(1, { message: 'Elegir un tipo de circuito.' }),
-  workout_value: z.string(),
+  workout_value: z.string().nullable(),
   workout_exercises: z.array(WorkoutExerciseSchema).min(1, { message: 'Agregar al menos un ejercicio.' }),
 });
 const CreateWorkoutFormSchema = WorkoutFormSchema.omit({ id: true });
@@ -531,7 +537,7 @@ export async function createWorkout(prevState: CreateWorkoutState, formData: For
   redirect('/dashboard/workouts');
 }
 
-export async function updateWorkout(id: string, prevState: CreateWorkoutState, formData: FormData) {
+export async function updateWorkout(id: string, prevState: FormState, formData: FormData) {
   const validatedFields = CreateWorkoutFormSchema.safeParse({
     name: formData.get('name'),
     description: formData.get('description'),
@@ -551,10 +557,15 @@ export async function updateWorkout(id: string, prevState: CreateWorkoutState, f
   try {
     await client.sql`BEGIN`;
 
-    const newWorkoutQuery = await client.sql`
+    await client.sql`
       UPDATE workouts
       SET name = ${name}, description = ${description}, workout_type = ${workout_type}, workout_value = ${workout_value}
       WHERE id = ${id}
+    `;
+
+    await client.sql`
+      DELETE FROM workout_exercises
+      WHERE workout_id = ${id}
     `;
 
     await Promise.all(
@@ -572,14 +583,16 @@ export async function updateWorkout(id: string, prevState: CreateWorkoutState, f
     );
 
     await client.sql`COMMIT`;
+    return { success: true};
 
   } catch (error){
     await client.sql`ROLLBACK`;
-    return { message: 'Database Error: Failed to Create Workout'};
+    console.log(error);
+    return { success: false, message: 'Database Error: Failed to Create Workout', errors: []};
   }
 
-  revalidatePath('/dashboard/workouts');
-  redirect('/dashboard/workouts');
+  // revalidatePath('/dashboard/workouts');
+  // redirect('/dashboard/workouts');
 }
 
 export async function deleteWorkout(id: string) {
@@ -650,37 +663,62 @@ export async function updatePlan(id: string, prevState: CreatePlanState, formDat
     };
   } 
   const { name, description } = validatedFields.data;
+  let result;
 
   try {
-    await sql`
+    result = await sql`
       UPDATE plans
       SET name = ${name}, description = ${description}
       WHERE id = ${id}
+      RETURNING name, description
     `;
   } catch (error) {
+    console.log(error);
     return { message: 'Database Error: Failed to Update Plan.' };
   }
  
-  revalidatePath('/dashboard/plans');
-  redirect('/dashboard/plans');
+  revalidatePath(`/dashboard/plans/${id}/edit`);
+  return { success: true, message: 'Plan Edited.', plan: result.rows[0] };
 }
 
 export async function deletePlan(id: string) {
+  const client = await db.connect();
   try {
-    await sql`DELETE FROM plans WHERE id = ${id}`;
-      
+    await client.sql`BEGIN`;
+
+    await client.sql`
+      DELETE FROM session_blocks
+      WHERE session_id IN (
+        SELECT id FROM sessions WHERE plan_id = ${id}
+      )
+    `;
+
+    await client.sql`
+      DELETE FROM sessions
+      WHERE plan_id = ${id}
+    `;
+
+    await client.sql`
+      DELETE FROM plans 
+      WHERE id = ${id}
+    `;
+
+    await client.sql`COMMIT`;
+
   } catch (error){
+    await client.sql`ROLLBACK`;
+    console.log(error);
     return { message: 'Database Error: Failed to Delete Plan' };
   }
 
   revalidatePath('/dashboard/plans');
-  redirect('/dashboard/plans');
 }
 
 const SessionFormSchema = z.object({
   id: z.string(),
   name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
   description: z.string().nullable(),
+  position: z.coerce.number(),
   plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' })
 });
 const CreateSessionFormSchema = SessionFormSchema.omit({ id: true });
@@ -689,6 +727,7 @@ export async function createSession(session: Session) {
   const validatedFields = CreateSessionFormSchema.safeParse({
     name: session.name,
     description: session.description,
+    position: session.position,
     plan_id: session.plan_id
   });
  
@@ -698,17 +737,17 @@ export async function createSession(session: Session) {
       message: 'Failed to Create Session.',
     };
   } 
-  const { name, plan_id } = validatedFields.data;
+  const { name, plan_id, position } = validatedFields.data;
   let id;
 
   try {
-    const session = await sql`
-      INSERT INTO sessions (plan_id, name)
-      VALUES (${plan_id}, ${name})
+    const result = await sql`
+      INSERT INTO sessions (plan_id, name, position)
+      VALUES (${plan_id}, ${name}, ${position})
       RETURNING id
     `;
 
-    id = session.rows[0].id;
+    id = result.rows[0].id;
     return id;
 
   } catch (error){
@@ -720,12 +759,239 @@ export async function createSession(session: Session) {
 }
 
 export async function deleteSession(id: string) {
+  const client = await db.connect();
   try {
-    const result = await sql`DELETE FROM sessions WHERE id = ${id}`;
-    
+    await client.sql`BEGIN`;
+
+    // TODO delete workouts? should I delete only the ones that have no name?
+
+    await client.sql`
+      DELETE FROM session_blocks
+      WHERE session_id = ${id}
+    `;
+
+    await client.sql`
+      DELETE FROM sessions 
+      WHERE id = ${id}
+    `;
+
+    await client.sql`COMMIT`;
+    return true;
+
+  } catch (error){
+    await client.sql`ROLLBACK`;
+    console.log(error);
+    return { message: 'Database Error: Failed to Delete Session' };
+  }
+
+  //revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+}
+
+export async function updateSession(id: string, prevState: CreatePlanState, formData: FormData) {
+  const validatedFields = CreateSessionFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    position: formData.get('position'),
+    plan_id: formData.get('plan_id')
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Update Session.',
+    };
+  } 
+  const { name, description, position, plan_id } = validatedFields.data;
+  let result;
+
+  try {
+    result = await sql`
+      UPDATE sessions
+      SET name = ${name}, description = ${description}, position = ${position}
+      WHERE id = ${id}
+      RETURNING name, description
+    `;
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Session.' };
+  }
+
+  revalidatePath(`/dashboard/plans/${plan_id}/edit/sessions/${id}/edit`);
+  return { success: true, message: 'Session Edited.', session: result.rows[0] };
+}
+
+
+const SessionBlockFormSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
+  description: z.string().nullable(),
+  position: z.coerce.number(),
+  session_id: z.string().min(1, { message: 'Session id es obligatorio.' }),
+  plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' })
+});
+const CreateSessionBlockFormSchema = SessionBlockFormSchema.omit({ id: true });
+
+export async function createSessionBlock(block: SessionBlock) {
+  const validatedFields = CreateSessionBlockFormSchema.safeParse({
+    name: block.name,
+    description: block.description,
+    position: block.position,
+    session_id: block.session_id,
+    plan_id: block.plan_id,
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Create SessionBlock.',
+    };
+  } 
+  const { name, session_id, plan_id, position, description } = validatedFields.data;
+  let id;
+
+  try {
+    const block = await sql`
+      INSERT INTO session_blocks (session_id, name, description, position)
+      VALUES (${session_id}, ${name}, ${description}, ${position})
+      RETURNING id
+    `;
+
+    revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+    id = block.rows[0].id;
+    return id;
+
+  } catch (error){
+    console.log(error);
+    return { message: 'Database Error: Failed to Create SessionBlock' };
+  }
+}
+
+export async function updateSessionBlock(id: string, prevState: CreatePlanState, formData: FormData) {
+  const validatedFields = CreateSessionBlockFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    position: formData.get('position'),
+    session_id: formData.get('session_id'),
+    plan_id: formData.get('plan_id')
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Update SessionBlock.',
+    };
+  } 
+  const { name, description, position, session_id, plan_id } = validatedFields.data;
+  let result;
+
+  try {
+    result = await sql`
+      UPDATE session_blocks
+      SET name = ${name}, description = ${description}, position = ${position}
+      WHERE id = ${id}
+      RETURNING name, description
+    `;
+  } catch (error) {
+    console.log(error);
+    return { message: 'Database Error: Failed to Update SessionBlock.' };
+  }
+
+  revalidatePath(`/dashboard/plans/${plan_id}/edit/sessions/${session_id}/edit`);
+  return { success: true, message: 'SessionBlock Edited.', block: result.rows[0] };
+}
+
+export async function deleteSessionBlock(id: string) {
+  const client = await db.connect();
+  try {
+    await client.sql`BEGIN`;
+
+    // TODO delete workouts? should I delete only the ones that have no name?
+
+    await client.sql`
+      DELETE FROM session_blocks_workouts
+      WHERE session_block_id = ${id}
+    `;
+
+    await client.sql`
+      DELETE FROM session_blocks 
+      WHERE id = ${id}
+    `;
+
+    await client.sql`COMMIT`;
+    return true;
+
+  } catch (error){
+    await client.sql`ROLLBACK`;
+    console.log(error);
+    return { message: 'Database Error: Failed to Delete SessionBlock' };
+  }
+}
+
+const SessionBlockWorkoutFormSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
+  description: z.string().nullable(),
+  workout_type: z.string(),
+  workout_value: z.string(),
+  session_block_id: z.string().min(1, { message: 'SessionBlock id es obligatorio.' }),
+  session_id: z.string().min(1, { message: 'Session id es obligatorio.' }),
+  plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' }),
+});
+const CreateSessionBlockFormWorkoutSchema = SessionBlockWorkoutFormSchema.omit({ id: true });
+
+export async function createSessionBlockWorkout(session_block_id: string, position: number) {
+  // const validatedFields = CreateSessionBlockFormSchema.safeParse({
+  //   name: block.name,
+  //   description: block.description,
+  //   session_id: block.session_id,
+  //   plan_id: block.plan_id,
+  // });
+ 
+  // if (!validatedFields.success) {
+  //   return {
+  //     errors: validatedFields.error.flatten().fieldErrors,
+  //     message: 'Failed to Create SessionBlock.',
+  //   };
+  // } 
+  // const { name, session_id, plan_id } = validatedFields.data;
+  // let id;
+  let new_workout_id;
+
+  try {
+    const result = await sql`
+      INSERT INTO workouts (workout_type)
+      VALUES ('')
+      RETURNING id
+    `;
+    new_workout_id = result.rows[0].id;
+
+  } catch (error){
+    console.log(error);
+    return { message: 'Database Error: Failed to Create Workout' };
+  }
+
+  try {
+    await sql`
+      INSERT INTO session_blocks_workouts (session_block_id, workout_id, position)
+      VALUES (${session_block_id}, ${new_workout_id}, ${position})
+    `;
+
+  } catch (error){
+    console.log(error);
+    return { message: 'Database Error: Failed to Create SessionBlockWorkout' };
+  }
+
+  return new_workout_id;
+}
+
+export async function deleteSessionBlockWorkout(id: string) {
+  try {
+    const result = await sql`DELETE FROM session_blocks_workouts WHERE workout_id = ${id}`;
+    // TODO delete workout??
+
     return result.rows[0].rowCount == 1;
   } catch (error){
-    return { message: 'Database Error: Failed to Delete Plan' };
+    console.log(error);
+    return { message: 'Database Error: Failed to Delete SessionBlockWorkout' };
   }
 }
 

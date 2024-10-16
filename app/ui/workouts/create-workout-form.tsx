@@ -63,7 +63,7 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
   return (
     <form action={action}>
 
-      <div className="mb-4">
+      {/*<div className="mb-4">
         <label htmlFor="name" className="mb-2 block text-sm">
           Nombre
         </label>
@@ -81,33 +81,34 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
             <p key={error} className="mt-2 text-sm text-red-500"> { error } </p>
           ))
         }
-      </div>
+      </div>*/}
 
       <div className="mb-4">
-        <label htmlFor="description" className="mb-2 block text-sm">
-          Descripción
+        <label htmlFor="workout_type" className="mb-2 block text-sm">
+          Tipo de circuito
         </label>
         <input 
-          id="description"
-          name="description"
+          id="workout_type"
+          name="workout_type"
           type="text"
           className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
-          placeholder="Ingresa una descripción"
+          placeholder="Ej: 4 rondas, AMRAP, EMOM, etc."
           aria-describedby="description-error"
         />
       </div>
-      <div id="description-error" aria-live="polite" aria-atomic="true">
-        { state.errors?.description && state.errors.description.map((error: string) => (
+      <div id="workout_type-error" aria-live="polite" aria-atomic="true">
+        { state.errors?.workout_type && state.errors.workout_type.map((error: string) => (
             <p key={error} className="mt-2 text-sm text-red-500"> { error } </p>
           ))
         }
       </div>
 
-        <div className="mt-10">
-          <label htmlFor="workout_type" className="block text-sm">
-            Tipo de circuito
-          </label>
-          <div className="flex flex-col p-2">
+      <div>
+        {/*<label htmlFor="workout_type" className="block text-sm">
+          Tipo de circuito
+        </label>*/}
+        {/*<div className="flex flex-col">
+          <div className="flex flex-row gap-3 p-2">
             <div className="flex items-center">
               <input
                 id="rounds"
@@ -119,18 +120,9 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                 onChange={handleOptionChange}
                 defaultChecked
               />
-              <label htmlFor="rounds" className="w-24 ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
-                Por rondas
+              <label htmlFor="rounds" className="block text-sm font-medium text-gray-700 cursor-pointer p-2">
+                Rondas
               </label>
-              { workoutType === 'rounds' && 
-                <input 
-                  id="workout_value"
-                  name="workout_value"
-                  type="text"
-                  className="grow rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa la cantidad de rondas"
-                />
-              }
             </div>
             <div className="flex items-center">
               <input
@@ -141,18 +133,9 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                 className="h-4 w-4 border-gray-300"
                 onChange={handleOptionChange}
               />
-              <label htmlFor="amrap" className="w-24 ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
+              <label htmlFor="amrap" className="block text-sm font-medium text-gray-700 cursor-pointer p-2">
                 AMRAP
               </label>
-              { workoutType === 'amrap' && 
-                <input 
-                  id="workout_value"
-                  name="workout_value"
-                  type="text"
-                  className="grow rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa el tiempo"
-                />
-              }
             </div>
             <div className="flex items-center">
               <input
@@ -163,18 +146,9 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                 className="h-4 w-4 border-gray-300"
                 onChange={handleOptionChange}
               />
-              <label htmlFor="emom" className="w-24 ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
+              <label htmlFor="emom" className="block text-sm font-medium text-gray-700 cursor-pointer p-2">
                 EMOM
               </label>
-              { workoutType === 'emom' && 
-                <input 
-                  id="workout_value"
-                  name="workout_value"
-                  type="text"
-                  className="grow rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa el tiempo"
-                />
-              }
             </div>
             <div className="flex items-center">
               <input
@@ -185,20 +159,50 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
                 className="h-4 w-4 border-gray-300"
                 onChange={handleOptionChange}
               />
-              <label htmlFor="other" className="w-24 ml-3 block text-sm font-medium text-gray-700 cursor-pointer p-2">
+              <label htmlFor="other" className="block text-sm font-medium text-gray-700 cursor-pointer p-2">
                 Otro
               </label>
-              { workoutType === 'other' && 
-                <input 
-                  id="workout_value"
-                  name="workout_value"
-                  type="text"
-                  className="grow rounded-md border border-gray-200 text-sm placeholder:text-gray"
-                  placeholder="Ingresa el tipo de ejercicio"
-                />
-              }
             </div>
           </div>
+          <div className="grow">
+          { workoutType === 'rounds' && 
+            <input 
+              id="workout_value"
+              name="workout_value"
+              type="text"
+              className="grow w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+              placeholder="Ingresa la cantidad de rondas"
+            />
+          }
+          { workoutType === 'amrap' && 
+            <input 
+              id="workout_value"
+              name="workout_value"
+              type="text"
+              className="grow w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+              placeholder="Ingresa el tiempo"
+            />
+          }
+          { workoutType === 'emom' && 
+            <input 
+              id="workout_value"
+              name="workout_value"
+              type="text"
+              className="grow w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+              placeholder="Ingresa el tiempo"
+            />
+          }
+          { workoutType === 'other' && 
+            <input 
+              id="workout_value"
+              name="workout_value"
+              type="text"
+              className="grow w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+              placeholder="Ingresa el tipo de ejercicio"
+            />
+          }
+          </div>
+        </div>*/}
       </div>
       <div id="workout_value-error" aria-live="polite" aria-atomic="true">
         { state.errors?.workout_value && state.errors.workout_value.map((error: string) => (
@@ -232,10 +236,10 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
           </select>
           <button type="button" 
             className={`rounded-md border p-2 text-sm font-medium flex
-              ${selectedExerciseId ? 'hover:bg-gray-100 text-gray-600' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+              ${selectedExerciseId ? 'bg-black text-white transition-colors hover:bg-black' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
             onClick={handleAddExercise}
             disabled={!selectedExerciseId}>
-              <span>Agregar ejercicio</span>
+              <span>Agregar</span>
               <PlusIcon className="h-5 ml-2" />
           </button>
         </div>
@@ -316,13 +320,17 @@ export default function CreateWorkoutForm({ exerciseNames }: { exerciseNames: Ex
         }
       </div>
 
-      <div className="mt-6 flex justify-center gap-4">
+      <div className="mt-6 flex justify-center gap-2">
         <Button type="submit">
           Crear circuito
         </Button>
-        <Link href="/dashboard/workouts" className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
+        {/*<button
+          type="button"
+          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+          onClick={() => setIsEditing(false)}
+        >
           Cancelar
-        </Link>
+        </button>*/}
       </div>
       <div aria-live="polite" aria-atomic="true">
         {state.message && <p className="mt-2 text-sm text-red-500"> { state.message } </p>}

@@ -22,7 +22,7 @@ export default async function Page() {
           },
         ]}
       />
-      <CreateWorkoutForm exerciseNames={exercises}/>
+      {/*<CreateWorkoutForm exerciseNames={exercises}/>*/}
     </main>
   );
 }
