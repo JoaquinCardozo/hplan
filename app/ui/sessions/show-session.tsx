@@ -13,13 +13,11 @@ export default function ShowSession({ session }: { session: Session }){
     		<div className="flex flex-col items-center text-center">
           <div className="grow text-2xl font-bold">{session.name}</div>
           <div className="grow">{session.description || "(Sin descripción)"}</div>
-          <div className="grow">
+          <div className="grow relative w-full max-w-[500px] mt-5 aspect-video">
             <iframe 
-              width="500" 
-              height="300" 
               src="https://www.youtube.com/embed/9CbOFxDJM0o?si=4DGlgMIftyP1KBq9"
               title="Preview"
-              className="mt-2 border-2 rounded-lg"
+              className="absolute top-0 left-0 w-full h-full border-2 rounded-lg"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowFullScreen
             /> 
