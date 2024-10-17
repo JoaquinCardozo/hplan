@@ -43,13 +43,17 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
     setAddedSessions([...addedSessions, newSession]);
   };
 
+  const [deleteError, setDeleteError] = useState<string>('');
+
   async function handleDeleteSession(indexToRemove: number) {
     const isConfirmed = window.confirm("¿Borrar esta sesión?");
     if (isConfirmed) {
-      const success =  await deleteSession(addedSessions[indexToRemove].id);
-      console.log(success)
-      if (success) {
+      const result =  await deleteSession(addedSessions[indexToRemove].id);
+      if (result.success) {
         setAddedSessions(addedSessions.filter((_, index) => index !== indexToRemove));
+      }
+      else {
+        setDeleteError(result.message || 'Error desconocido');
       }
     }
   };
@@ -158,7 +162,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
                 <div className="flex flex-col">
                   <div className="text-lg font-medium">{session.name}</div>
                   <div className="text-sm">{session.description}</div>
-                  <div className="text-sm">Position {session.position}</div>
+                  {/*<div className="text-sm">Position {session.position}</div>*/}
                 </div>
                 <div className="grow text-right">
                   <button className="rounded-md border p-2 hover:bg-gray-100">
@@ -176,6 +180,11 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
               </div>
             </div>
           ))}
+        </div>
+        <div id="name-error" aria-live="polite" aria-atomic="true" className="text-sm text-red-500 text-right">
+          { deleteError &&
+            <p key={deleteError}> { deleteError } </p>
+          }
         </div>
       </div>
 

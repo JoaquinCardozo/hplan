@@ -471,9 +471,9 @@ const WorkoutFormSchema = z.object({
   id: z.string(),
   name: z.string().nullable(),
   description: z.string().nullable(),
-  workout_type: z.string().min(1, { message: 'Elegir un tipo de circuito.' }),
+  workout_type: z.string(),
   workout_value: z.string().nullable(),
-  workout_exercises: z.array(WorkoutExerciseSchema).min(1, { message: 'Agregar al menos un ejercicio.' }),
+  workout_exercises: z.array(WorkoutExerciseSchema),
 });
 const CreateWorkoutFormSchema = WorkoutFormSchema.omit({ id: true });
 
@@ -687,6 +687,16 @@ export async function deletePlan(id: string) {
     await client.sql`BEGIN`;
 
     await client.sql`
+      DELETE FROM session_blocks_workouts
+      WHERE session_block_id IN (
+        SELECT id FROM session_blocks 
+        WHERE session_id IN (
+          SELECT id FROM sessions WHERE plan_id = ${id}
+        )
+      )
+    `;
+
+    await client.sql`
       DELETE FROM session_blocks
       WHERE session_id IN (
         SELECT id FROM sessions WHERE plan_id = ${id}
@@ -712,6 +722,7 @@ export async function deletePlan(id: string) {
   }
 
   revalidatePath('/dashboard/plans');
+  return { success: true };
 }
 
 const SessionFormSchema = z.object({
@@ -765,6 +776,21 @@ export async function deleteSession(id: string) {
 
     // TODO delete workouts? should I delete only the ones that have no name?
 
+    const result = await client.sql`
+      SELECT plan_id
+      FROM sessions
+      WHERE id = ${id}
+    `;
+    const plan_id = result.rows[0].plan_id;
+
+    await client.sql`
+      DELETE FROM session_blocks_workouts
+      WHERE session_block_id IN (
+        SELECT id FROM session_blocks 
+        WHERE session_id = ${id}
+      )
+    `;
+
     await client.sql`
       DELETE FROM session_blocks
       WHERE session_id = ${id}
@@ -776,15 +802,16 @@ export async function deleteSession(id: string) {
     `;
 
     await client.sql`COMMIT`;
-    return true;
+
+    revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+    return { success: true };
 
   } catch (error){
     await client.sql`ROLLBACK`;
+    
     console.log(error);
-    return { message: 'Database Error: Failed to Delete Session' };
+    return { success: false,  message: 'Error al borrar la sesión'};
   }
-
-  //revalidatePath('/dashboard/plans/' + plan_id + '/edit');
 }
 
 export async function updateSession(id: string, prevState: CreatePlanState, formData: FormData) {

@@ -24,11 +24,11 @@ const links = [
     href: '/dashboard/plans', 
     icon: ClipboardDocumentIcon 
   },
-  { 
-    name: 'Circuitos', 
-    href: '/dashboard/workouts', 
-    icon: DocumentDuplicateIcon 
-  },
+  // { 
+  //   name: 'Circuitos', 
+  //   href: '/dashboard/workouts', 
+  //   icon: DocumentDuplicateIcon 
+  // },
   {
     name: 'Ejercicios',
     href: '/dashboard/exercises',
