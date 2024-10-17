@@ -13,8 +13,7 @@ export function middleware(request: NextRequest) {
     }
   }
   else {
-    if (!request.nextUrl.pathname.startsWith('/login') && 
-        !request.nextUrl.pathname.startsWith('/register')) {
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
       return Response.redirect(new URL('/login', request.url))
     }
   }
