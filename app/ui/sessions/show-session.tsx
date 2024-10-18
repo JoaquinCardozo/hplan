@@ -30,7 +30,7 @@ export default function ShowSession({ session }: { session: Session }){
           {session.blocks
           		.sort((a: SessionBlock, b: SessionBlock) => a.position - b.position)
           		.map((block, index) => (
-            <div key={index} className="mb-4 p-4 border rounded-md shadow-sm bg-white">
+            <div key={index} className="mb-4 border rounded-md shadow-sm bg-white">
             	<div className="flex flex-col gap-5">
 	              <div className="relative flex flex-row gap-1">
 	                <ShowBlock block={block} plan_id={session.plan_id} />

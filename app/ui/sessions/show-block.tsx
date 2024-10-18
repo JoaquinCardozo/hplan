@@ -98,66 +98,78 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
       <div>
         <button
           type="button"
-          className="w-full p-1 m-1 ml-[-10px] rounded-md hover:bg-gray-100"
+          className="w-full p-3 rounded-md hover:bg-gray-100"
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
-          <div className="flex gap-2">
+          <div className="flex gap-2 pl-2">
             { isCollapsed && <ChevronRightIcon className="w-5" /> }
             { !isCollapsed && <ChevronDownIcon className="w-5" /> }
-            <div className="grow text-lg font-medium text-left">{block.name}</div>
+            <div className="grow text-lg text-left font-bold">{block.name}</div>
           </div>
         </button>
       </div>
 
       <div>
       { !isCollapsed &&
-        <div className="m-2 mt-2"> 
-          { block.description && <div className="text-sm text-gray-400">{block.description}</div> }         
-          <div className="mt-4">
+        <div className="m-4 smx:m-2 mt-2"> 
+          { block.description && <div className="pb-4 text-sm text-gray-400">{block.description}</div> }         
+          
+          <div className="flex flex-col gap-4 ">
             {addedWorkouts
                 .sort((a: SessionBlockWorkout, b: SessionBlockWorkout) => a.position - b.position)
                 .map((workout, index) => (
-              <div key={index} className="relative mb-4 p-4 pb-8 border rounded-md shadow-sm bg-white">
-                <div className="mb-5 font-bold">
+              <div key={index} className="relative p-4 border rounded-md shadow-sm bg-white">
+                <div className="font-bold">
                   {workout.workout_type || "Circuito nuevo"}
                   {workout.description}
                 </div>
 
+                <div className="flex flex-col sm:gap-2 smx:gap-4">
                 { workout.exercises?.sort((a: WorkoutExercise, b: WorkoutExercise) => a.position - b.position)
                     .map((exercise : WorkoutExercise) => (
                   <div key={workout.id + exercise.position + exercise.exercise_id}>
-                    <div className="flex flex-row justify-between items-center gap-4">
+                    <div className="flex flex-row smx:flex-col justify-between sm:items-center gap-2">
                       <div className="flex flex-col">
-                        <div className="flex-grow flex gap-4 smx:flex-col smx:gap-1">
+                        <div className="flex-grow flex gap-2">
                           <div>{exercise.reps}</div>
                           <div>{exercise.name}</div>
                           { exercise.weight && <div>{exercise.weight}</div> }
                         </div>
-                        <div>
+                        <div className="smx:hidden">
                           { exercise.notes &&
                             <div className="mt-2 text-sm text-gray-400">{exercise.notes}</div>
                           }
                         </div>
                       </div>
-                      {exercise.image_url ? (
-                        <Image
-                          src={exercise.image_url}
-                          width={150}
-                          height={100}
-                          alt={exercise.name}
-                          className="border-2 rounded-lg"
-                        />
-                      ): (
-                        <div className="w-[150px] h-[100px] border-2 rounded-lg flex items-center justify-center">
-                          <span className="text-gray-500">Sin imagen</span>
+                      <div className="flex flex-row gap-2 items-center">
+                        <div className="smx:basis-1/2">
+                          {exercise.image_url ? (
+                            <Image
+                              src={exercise.image_url}
+                              width={150}
+                              height={100}
+                              alt={exercise.name}
+                              className="border-2 rounded-lg"
+                            />
+                          ): (
+                            <div className="w-[150px] h-[100px] border-2 rounded-lg flex items-center justify-center">
+                              <span className="text-gray-500">Sin imagen</span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                        <div className="sm:hidden smx:basis-1/2">
+                          { exercise.notes &&
+                            <div className="text-sm text-gray-400">{exercise.notes}</div>
+                          }
+                        </div>
+                      </div>
                     </div>
                     { exercise.rest &&
                       <div className="mt-2">Descanso: {exercise.rest}</div>
                     }
                   </div>
                 ))}
+                </div>
               </div>
             ))}
           </div>
