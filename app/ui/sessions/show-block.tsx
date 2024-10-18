@@ -21,6 +21,18 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
   const [state, action] = useFormState(updateSessionBlockWithId, initialState);
   const [isEditing, setIsEditing] = useState(false);
 
+  const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
+  const [selectedImage, setSelectedImage] = useState<string>('');
+  const openImageModal = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setIsImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedImage('');
+  };
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -142,22 +154,47 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                         </div>
                       </div>
                       <div className="flex flex-row gap-2 items-center">
-                        <div className="smx:basis-1/2">
+                        <div>
                           {exercise.image_url ? (
-                            <Image
-                              src={exercise.image_url}
-                              width={150}
-                              height={100}
-                              alt={exercise.name}
-                              className="border-2 rounded-lg"
-                            />
+                            <div>
+                              <div className="relative sm:w-[150px] smx:w-[100px] aspect-video">
+                                <Image
+                                  src={exercise.image_url}
+                                  alt={exercise.name}
+                                  fill
+                                  className="object-cover border-2 rounded-lg"
+                                  onClick={() => openImageModal(exercise.image_url)}
+                                />
+                              </div>
+
+                              {isImageModalOpen && (
+                                <div
+                                  className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50"
+                                  onClick={closeImageModal}
+                                >
+                                  <div className="relative max-w-3xl w-full p-4">
+                                    <div 
+                                      className="relative aspect-[16/9] w-full"
+                                      // onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Image
+                                        src={selectedImage}
+                                        alt="Imagen de ejercicio"
+                                        fill
+                                        className="object-cover rounded-lg"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           ): (
                             <div className="w-[150px] h-[100px] border-2 rounded-lg flex items-center justify-center">
                               <span className="text-gray-500">Sin imagen</span>
                             </div>
                           )}
                         </div>
-                        <div className="sm:hidden smx:basis-1/2">
+                        <div className="sm:hidden">
                           { exercise.notes &&
                             <div className="text-sm text-gray-400">{exercise.notes}</div>
                           }

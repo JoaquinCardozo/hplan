@@ -12,7 +12,9 @@ export default function ShowSession({ session }: { session: Session }){
     	<div>
     		<div className="flex flex-col items-center text-center">
           <div className="grow text-2xl font-bold">{session.name}</div>
-          <div className="grow">{session.description || "(Sin descripción)"}</div>
+          <div className="grow text-sm text-gray-400">{session.description || "(Sin descripción)"}</div>
+          
+          {/* TODO poner video en data base */}
           <div className="grow relative w-full max-w-[500px] mt-5 aspect-video">
             <iframe 
               src="https://www.youtube.com/embed/9CbOFxDJM0o?si=4DGlgMIftyP1KBq9"
