@@ -2,6 +2,7 @@
 
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 import ShowBlock from '@/app/ui/sessions/show-block';
 import { Session, SessionBlock } from '@/app/lib/definitions'; 
 
@@ -14,16 +15,30 @@ export default function ShowSession({ session }: { session: Session }){
           <div className="grow text-2xl font-bold">{session.name}</div>
           <div className="grow text-sm text-gray-400">{session.description || "(Sin descripción)"}</div>
           
-          {/* TODO poner video en data base */}
-          <div className="grow relative w-full max-w-[500px] mt-5 aspect-video">
-            <iframe 
-              src="https://www.youtube.com/embed/9CbOFxDJM0o?si=4DGlgMIftyP1KBq9"
-              title="Preview"
-              className="absolute top-0 left-0 w-full h-full border-2 rounded-lg"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowFullScreen
-            /> 
-          </div>
+          {session.image_url && 
+            <div className="relative w-full mx-auto">
+              <Image
+                src={session.image_url}
+                alt="Imagen del plan"
+                layout="responsive"
+                width={16}
+                height={9} 
+                className="border-2 rounded-lg object-contain" 
+              />
+            </div>
+          }
+
+          {session.video_url && 
+            <div className="text-center grow relative w-full max-w-[500px] mt-5 aspect-video">
+              <iframe 
+                src={session.video_url}
+                title="Preview"
+                className="absolute top-0 left-0 w-full h-full border-2 rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              /> 
+            </div>
+          }
         </div>
       </div>
 

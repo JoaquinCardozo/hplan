@@ -22,15 +22,24 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
   const [isEditing, setIsEditing] = useState(false);
 
   const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
+  const [selectedName, setSelectedName] = useState<string>('');
+  const [selectedNotes, setSelectedNotes] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<string>('');
-  const openImageModal = (imageUrl: string) => {
+  const [selectedVideo, setSelectedVideo] = useState<string>('');
+  const openImageModal = (name: string, notes: string, imageUrl: string, videoUrl: string) => {
+    setSelectedName(name);
+    setSelectedNotes(notes);
     setSelectedImage(imageUrl);
+    setSelectedVideo(videoUrl);
     setIsImageModalOpen(true);
   };
 
   const closeImageModal = () => {
     setIsImageModalOpen(false);
+    setSelectedName('');
+    setSelectedNotes('');
     setSelectedImage('');
+    setSelectedVideo('');
   };
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -163,7 +172,7 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   alt={exercise.name}
                                   fill
                                   className="object-cover border-2 rounded-lg"
-                                  onClick={() => openImageModal(exercise.image_url)}
+                                  onClick={() => openImageModal(exercise.name, exercise.notes, exercise.image_url, exercise.video_url)}
                                 />
                               </div>
 
@@ -172,11 +181,12 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50"
                                   onClick={closeImageModal}
                                 >
-                                  <div className="relative max-w-3xl w-full p-4">
-                                    <div 
-                                      className="relative aspect-[16/9] w-full"
-                                      // onClick={(e) => e.stopPropagation()}
-                                    >
+                                  <div className="relative max-w-3xl w-full smx:p-3 smx:pb-5 sm:p-10 flex flex-col gap-5 rounded-lg border-2 bg-white">
+
+                                    <div className="text-center text-xl font-bold text-black sm:text-center">{selectedName}</div>
+                                    <div className="text-gray-600 sm:text-center">{selectedNotes}</div>
+
+                                    <div className="relative aspect-[16/9] w-full" onClick={(e) => e.stopPropagation()} >
                                       <Image
                                         src={selectedImage}
                                         alt="Imagen de ejercicio"
@@ -184,6 +194,18 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                         className="object-cover rounded-lg"
                                       />
                                     </div>
+
+                                    {selectedVideo && (
+                                      <div  className="relative aspect-[16/9] w-full h-full" onClick={(e) => e.stopPropagation()} >
+                                          <iframe 
+                                            src={selectedVideo}
+                                            title="Preview"
+                                            className="mt-2 border-2 w-full h-full rounded-lg"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowFullScreen
+                                          />
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}

@@ -65,6 +65,8 @@ export type Plan = {
   id: string;
   name: string;
   description: string;
+  image_url: string;
+  video_url: string;
   sessions: Session[];
 }
 
@@ -74,6 +76,8 @@ export type Session = {
   description: string;
   plan_id: string;
   position: number;
+  image_url: string;
+  video_url: string;
   blocks: SessionBlock[];
 }
 

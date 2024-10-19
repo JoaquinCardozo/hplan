@@ -366,10 +366,14 @@ export async function fetchPlanById(id: string){
         plans.id,
         plans.name,
         plans.description,
+        plans.image_url,
+        plans.video_url,
         sessions.id AS session_id,
         sessions.name AS session_name,
         sessions.description AS session_description,
-        sessions.position AS session_position
+        sessions.position AS session_position,
+        sessions.image_url AS session_image_url,
+        sessions.video_url AS session_video_url
       FROM plans
       LEFT JOIN sessions ON sessions.plan_id = plans.id
       WHERE plans.id = ${id};
@@ -383,6 +387,8 @@ export async function fetchPlanById(id: string){
       id: data.rows[0].id,
       name: data.rows[0].name,
       description: data.rows[0].description,
+      image_url: data.rows[0].image_url,
+      video_url: data.rows[0].video_url,
       sessions: []
     };
 
@@ -393,6 +399,8 @@ export async function fetchPlanById(id: string){
           name: row.session_name,
           description: row.session_description,
           position: row.session_position,
+          image_url: row.session_image_url,
+          video_url: row.session_video_url,
           plan_id: data.rows[0].id,
           blocks: []
         });
@@ -417,6 +425,8 @@ export async function fetchSessionById(id: string) {
         sessions.description,
         sessions.plan_id,
         sessions.position,
+        sessions.image_url,
+        sessions.video_url,
         session_blocks.id AS block_id,
         session_blocks.name AS block_name,
         session_blocks.description AS block_description,
@@ -453,6 +463,8 @@ export async function fetchSessionById(id: string) {
       name: data.rows[0].name,
       description: data.rows[0].description,
       position: data.rows[0].position,
+      image_url: data.rows[0].image_url,
+      video_url: data.rows[0].video_url,
       plan_id: data.rows[0].plan_id,
       blocks: []
     };

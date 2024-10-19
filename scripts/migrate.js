@@ -157,6 +157,24 @@ async function migrate(client) {
     throw error;
   }
 
+  // Add column "image_url" and "video_url" to "plans" table
+  try {
+    await client.sql`
+      ALTER TABLE plans
+      ADD COLUMN IF NOT EXISTS image_url VARCHAR(255);
+    `;
+    await client.sql`
+      ALTER TABLE plans
+      ADD COLUMN IF NOT EXISTS video_url VARCHAR(255);
+    `;
+    
+    console.log('Column "image_url" added to "plans" table');
+    console.log('Column "video_url" added to "plans" table');
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
   // Create the "sessions" table if it doesn't exist
   try {
     await client.sql`
@@ -183,6 +201,24 @@ async function migrate(client) {
     `;
     
     console.log('Column "position" added to "sessions" table');
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Add column "image_url" and "video_url" to "sessions" table
+  try {
+    await client.sql`
+      ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS image_url VARCHAR(255);
+    `;
+    await client.sql`
+      ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS video_url VARCHAR(255);
+    `;
+    
+    console.log('Column "image_url" added to "sessions" table');
+    console.log('Column "video_url" added to "sessions" table');
   } catch (error) {
     console.error('Error migrating database:', error);
     throw error;

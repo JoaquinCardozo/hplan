@@ -6,6 +6,7 @@ import { useFormState } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 import { PlusIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 export default function EditPlanForm({ plan }: { plan: Plan }){
@@ -21,8 +22,8 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
     const result = await updatePlan(plan.id, initialState, formData);
     if (result.success) {
       plan.name = result.plan.name;
-    plan.description = result.plan.description;
-    setIsEditing(false);
+      plan.description = result.plan.description;
+      setIsEditing(false);
     }
   }
 
@@ -35,6 +36,8 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
       description: '',
       position: addedSessions.length > 0 ? addedSessions[addedSessions.length - 1].position + 1 : 0,
       plan_id: plan.id,
+      image_url: '',
+      video_url: '',
       blocks: []
     };
     const session_id = await createSession(newSession);
@@ -57,6 +60,30 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
       }
     }
   };
+
+  const imageUrlRef = useRef<HTMLInputElement>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>();
+  const videoUrlRef = useRef<HTMLInputElement>(null);
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | undefined>();
+
+  useEffect(() => {
+    setPreviewImageUrl(plan.image_url);
+    setPreviewVideoUrl(plan.video_url);
+  }, [plan.image_url, plan.video_url]);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleVideoPreview = (link : string) => {
+    return 'https://www.youtube.com/embed/' + link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
 
   return (
     <div>
@@ -98,6 +125,83 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
               aria-describedby="description-error"
             />
           </div>
+
+          <div className="mb-4">
+            <label htmlFor="image_url" className="mb-2 block text-sm">
+              Imagen
+            </label>
+            <label className="rounded-md border p-2 hover:bg-gray-100 text-sm font-medium text-gray-600 cursor-pointer">
+              <span>Seleccionar imagen</span>
+              <input 
+                type="file" 
+                id="image" 
+                name="image" 
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+            </label>
+            {selectedFile && (
+              <div className="flex flex-col mt-3">
+                <p className="mt-2 text-sm text-gray-600">{selectedFile.name}</p>
+                <Image
+                  src={URL.createObjectURL(selectedFile)}
+                  width={150}
+                  height={100}
+                  alt="Preview"
+                  className="mt-2 border-2 rounded-lg"
+                />
+              </div>
+            )}
+            {!selectedFile && previewImageUrl && (
+              <div className="flex flex-col mt-3">
+                <Image
+                  src={previewImageUrl}
+                  width={150}
+                  height={100}
+                  alt="Preview"
+                  className="mt-2 border-2 rounded-lg"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="video_url" className="mb-2 block text-sm">
+              Video
+            </label>
+            <div className="flex gap-4">
+              <input 
+                id="video_url"
+                name="video_url"
+                type="text"
+                placeholder="Ingresa el enlace al video"
+                defaultValue={plan.video_url}
+                className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+                aria-describedby="video_url-error"
+                ref={videoUrlRef}
+              />
+              <button type="button" className="rounded-md border p-2 hover:bg-gray-100 text-sm font-medium text-gray-600"
+              onClick={()=> {
+                if (videoUrlRef.current)
+                  setPreviewVideoUrl(videoUrlRef.current.value);
+              }}>
+                <span>Preview</span>
+              </button>
+            </div>
+            {previewVideoUrl && (
+              <iframe 
+                width="150" 
+                height="100" 
+                src={handleVideoPreview(previewVideoUrl)}
+                title="Preview"
+                className="mt-2 border-2 rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              />        
+            )}
+          </div>
+
           <div id="name-error" aria-live="polite" aria-atomic="true">
             { state.errors?.description && state.errors.description.map((error: string) => (
                 <p key={error}> { error } </p>
@@ -120,10 +224,47 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
         </form>
       ) : (
         <div>
-          <div className="flex flex-row items-center">
-            <div className="flex flex-col">
+          <div className="flex flex-row">
+            <div className="flex flex-col gap-4 w-full">
             <div className="text-lg font-medium">{plan.name}</div>
             <div className="text-sm">{plan.description || "(Sin descripción)"}</div>
+            <div className="flex flex-row gap-5 items-center">
+              <div className="basis-1/2">
+                {plan.image_url ? (
+                  <div className="relative w-full mx-auto">
+                    <Image
+                      src={plan.image_url}
+                      alt="Imagen del plan"
+                      layout="responsive"
+                      width={16}
+                      height={9} 
+                      className="border-2 rounded-lg object-contain" 
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-[100px] border-2 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500">Sin imagen</span>
+                  </div>
+                )}
+              </div>
+              <div className="basis-1/2">
+                {plan.video_url ? ( 
+                  <div className="text-center grow relative w-full max-w-[500px] mt-5 aspect-video">
+                    <iframe 
+                      src={plan.video_url}
+                      title="Preview"
+                      className="absolute top-0 left-0 w-full h-full border-2 rounded-lg"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    /> 
+                  </div>
+                ) : (
+                  <div className="w-full h-[100px] border-2 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500">Sin video</span>
+                  </div>
+                )}
+              </div>
+            </div>
            </div>
             <div className="grow text-right">
               <button

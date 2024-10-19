@@ -618,7 +618,9 @@ export async function deleteWorkout(id: string) {
 const PlanFormSchema = z.object({
   id: z.string(),
   name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
-  description: z.string()
+  description: z.string(),
+  image: z.instanceof(File).nullable(),
+  video_url: z.string().nullable(),
 });
 const CreatePlanFormSchema = PlanFormSchema.omit({ id: true });
 
@@ -653,7 +655,9 @@ export async function createPlan() {
 export async function updatePlan(id: string, prevState: CreatePlanState, formData: FormData) {
   const validatedFields = CreatePlanFormSchema.safeParse({
     name: formData.get('name'),
-    description: formData.get('description')
+    description: formData.get('description'),
+    image: formData.get('image'),
+    video_url: formData.get('video_url'),
   });
  
   if (!validatedFields.success) {
@@ -662,13 +666,25 @@ export async function updatePlan(id: string, prevState: CreatePlanState, formDat
       message: 'Failed to Update Exercise.',
     };
   } 
-  const { name, description } = validatedFields.data;
+  let { name, description, image, video_url } = validatedFields.data;
+  if (video_url) {
+    video_url = 'https://www.youtube.com/embed/' + video_url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+
+  let image_url = "";
+  if (image && image.size && image.size > 0) {
+    const blob = await put("plan_images/" + image.name, image, {
+      access: 'public',
+    });
+    image_url = blob.url;
+  }
+
   let result;
 
   try {
     result = await sql`
       UPDATE plans
-      SET name = ${name}, description = ${description}
+      SET name = ${name}, description = ${description}, image_url = ${image_url}, video_url = ${video_url}
       WHERE id = ${id}
       RETURNING name, description
     `;
@@ -730,6 +746,8 @@ const SessionFormSchema = z.object({
   name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
   description: z.string().nullable(),
   position: z.coerce.number(),
+  image: z.instanceof(File).nullable(),
+  video_url: z.string().nullable(),
   plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' })
 });
 const CreateSessionFormSchema = SessionFormSchema.omit({ id: true });
@@ -739,6 +757,8 @@ export async function createSession(session: Session) {
     name: session.name,
     description: session.description,
     position: session.position,
+    image: null,
+    video_url: session.video_url,
     plan_id: session.plan_id
   });
  
@@ -758,6 +778,8 @@ export async function createSession(session: Session) {
       RETURNING id
     `;
 
+    revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+    
     id = result.rows[0].id;
     return id;
 
@@ -765,8 +787,6 @@ export async function createSession(session: Session) {
     console.log(error);
     return { message: 'Database Error: Failed to Create Session' };
   }
-
-  revalidatePath('/dashboard/plans/' + plan_id + '/edit');
 }
 
 export async function deleteSession(id: string) {
@@ -808,7 +828,7 @@ export async function deleteSession(id: string) {
 
   } catch (error){
     await client.sql`ROLLBACK`;
-    
+
     console.log(error);
     return { success: false,  message: 'Error al borrar la sesión'};
   }
@@ -819,7 +839,9 @@ export async function updateSession(id: string, prevState: CreatePlanState, form
     name: formData.get('name'),
     description: formData.get('description'),
     position: formData.get('position'),
-    plan_id: formData.get('plan_id')
+    plan_id: formData.get('plan_id'),
+    image: formData.get('image'),
+    video_url: formData.get('video_url')
   });
  
   if (!validatedFields.success) {
@@ -828,13 +850,25 @@ export async function updateSession(id: string, prevState: CreatePlanState, form
       message: 'Failed to Update Session.',
     };
   } 
-  const { name, description, position, plan_id } = validatedFields.data;
+
+  let { name, description, position, plan_id, image, video_url } = validatedFields.data;
+  if (video_url) {
+    video_url = 'https://www.youtube.com/embed/' + video_url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+
+  let image_url = "";
+  if (image && image.size && image.size > 0) {
+    const blob = await put("session_images/" + image.name, image, {
+      access: 'public',
+    });
+    image_url = blob.url;
+  }
   let result;
 
   try {
     result = await sql`
       UPDATE sessions
-      SET name = ${name}, description = ${description}, position = ${position}
+      SET name = ${name}, description = ${description}, position = ${position}, image_url = ${image_url}, video_url = ${video_url}
       WHERE id = ${id}
       RETURNING name, description
     `;
