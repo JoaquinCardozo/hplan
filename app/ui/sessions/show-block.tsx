@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { updateSessionBlock, createSessionBlockWorkout, deleteSessionBlockWorkout } from '@/app/lib/actions';
 import { SessionBlock, SessionBlockWorkout, ExerciseName, WorkoutExercise } from '@/app/lib/definitions';
-import { PlusIcon, TrashIcon, PencilIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, VideoCameraIcon, ArrowsPointingOutIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import EditWorkoutForm from '@/app/ui/workouts/edit-workout-form';
 
 export default function ShowBlock({ block, plan_id }: { block: SessionBlock, plan_id: string }){
@@ -140,10 +140,8 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                 .sort((a: SessionBlockWorkout, b: SessionBlockWorkout) => a.position - b.position)
                 .map((workout, index) => (
               <div key={index} className="relative p-4 border rounded-md shadow-sm bg-white">
-                <div className="font-bold">
-                  {workout.workout_type || "Circuito nuevo"}
-                  {workout.description}
-                </div>
+                <div className="font-bold text-lg">{workout.workout_type || "Circuito nuevo"}</div>
+                <div className="text-sm text-gray-400">{workout.description}</div>
 
                 <div className="flex flex-col sm:gap-2 smx:gap-4">
                 { workout.exercises?.sort((a: WorkoutExercise, b: WorkoutExercise) => a.position - b.position)
@@ -163,10 +161,15 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                         </div>
                       </div>
                       <div className="flex flex-row gap-2 items-center">
+                        <div className="sm:hidden">
+                          { exercise.notes &&
+                            <div className="text-sm text-gray-400">{exercise.notes}</div>
+                          }
+                        </div>
                         <div>
                           {exercise.image_url ? (
                             <div>
-                              <div className="relative sm:w-[150px] smx:w-[100px] aspect-video">
+                              <div className="relative sm:w-[200px] smx:w-[150px] aspect-video">
                                 <Image
                                   src={exercise.image_url}
                                   alt={exercise.name}
@@ -174,6 +177,15 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   className="object-cover border-2 rounded-lg"
                                   onClick={() => openImageModal(exercise.name, exercise.notes, exercise.image_url, exercise.video_url)}
                                 />
+                                
+                                { exercise.video_url && (
+                                  <div className="absolute bottom-2 left-2 bg-white p-1 rounded-full">
+                                    <VideoCameraIcon className="w-4" />
+                                  </div>
+                                )}
+                                <div className="absolute bottom-2 right-2 bg-white p-1 rounded-full">
+                                  <ArrowsPointingOutIcon className="w-4" />
+                                </div>
                               </div>
 
                               {isImageModalOpen && (
@@ -215,11 +227,6 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                               <span className="text-gray-500">Sin imagen</span>
                             </div>
                           )}
-                        </div>
-                        <div className="sm:hidden">
-                          { exercise.notes &&
-                            <div className="text-sm text-gray-400">{exercise.notes}</div>
-                          }
                         </div>
                       </div>
                     </div>
