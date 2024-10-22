@@ -452,6 +452,7 @@ export async function deleteExercise(id: string) {
     await sql`DELETE FROM exercises WHERE id = ${id}`;
       
   } catch (error){
+    console.log(error);
     return { message: 'Database Error: Failed to Delete Exercise' };
   }
 
@@ -686,7 +687,7 @@ export async function updatePlan(id: string, prevState: CreatePlanState, formDat
       UPDATE plans
       SET name = ${name}, description = ${description}, image_url = ${image_url}, video_url = ${video_url}
       WHERE id = ${id}
-      RETURNING name, description
+      RETURNING name, description, image_url
     `;
   } catch (error) {
     console.log(error);
@@ -779,7 +780,7 @@ export async function createSession(session: Session) {
     `;
 
     revalidatePath('/dashboard/plans/' + plan_id + '/edit');
-    
+
     id = result.rows[0].id;
     return id;
 
@@ -870,7 +871,7 @@ export async function updateSession(id: string, prevState: CreatePlanState, form
       UPDATE sessions
       SET name = ${name}, description = ${description}, position = ${position}, image_url = ${image_url}, video_url = ${video_url}
       WHERE id = ${id}
-      RETURNING name, description
+      RETURNING name, description, position, image_url
     `;
   } catch (error) {
     return { message: 'Database Error: Failed to Update Session.' };

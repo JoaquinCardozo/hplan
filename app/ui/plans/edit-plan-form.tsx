@@ -23,8 +23,24 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
     if (result.success) {
       plan.name = result.plan.name;
       plan.description = result.plan.description;
+      plan.image_url = result.plan.image_url;
       setIsEditing(false);
     }
+  }
+
+  const handleIsEditing = (value: boolean) => {
+    setIsEditing(value);
+
+    // TODO aca hay que ver que pasa. Luego de submit, estoy correctamente actualizando el image_url
+    // sin embargo cuando entro al modo de edicion, sigue apareciendo el nombre del archivo, cuando 
+    // deberia aparecer solo la vista previa (igual que la primera vez que entro al modo de edicion sin haber subido nada antes)
+    // Creo que si logro soluciuonar eso, deberia quedar
+    // Recordar duplicar en session
+
+    // if (value && imageUrlRef.current) {
+    //   imageUrlRef.current.value = "";
+    //   setSelectedFile(null);
+    // }
   }
 
   const [addedSessions, setAddedSessions] = useState<Session[]>(plan.sessions || []);
@@ -133,6 +149,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
             <label className="rounded-md border p-2 hover:bg-gray-100 text-sm font-medium text-gray-600 cursor-pointer">
               <span>Seleccionar imagen</span>
               <input 
+                ref={imageUrlRef}
                 type="file" 
                 id="image" 
                 name="image" 
@@ -216,7 +233,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
             <button
               type="button"
               className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
-              onClick={() => setIsEditing(false)}
+              onClick={() => handleIsEditing(false)}
             >
               Cancelar
             </button>
@@ -270,7 +287,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
               <button
                 type="button"
                 className="rounded-md border p-2 hover:bg-gray-100"
-                onClick={() => setIsEditing(true)}
+                onClick={() => handleIsEditing(true)}
               >
                 <PencilIcon className="w-5" />
               </button>
@@ -336,6 +353,9 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
       }
 
       <div className="mt-6 flex justify-center gap-4">
+        <Link target="_blank" href={`/plans/${plan.id}`} className="flex h-10 items-center rounded-lg bg-gray-500 px-4 text-sm font-medium text-white transition-colors">
+          Ver como usuario
+        </Link>
         <Link href="/dashboard/plans/" className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
           Volver
         </Link>

@@ -246,7 +246,7 @@ export default function EditBlockForm({ block, plan_id, exerciseNames }: { block
                           <div className="flex-grow flex gap-4 smx:flex-col smx:gap-1">
                             <div>{exercise.reps}</div>
                             <div>{exercise.name}</div>
-                            { exercise.weight && <div>({exercise.weight} kg)</div> }
+                            { exercise.weight && <div>({exercise.weight})</div> }
                           </div>
                           {exercise.image_url ? (
                             <Image
