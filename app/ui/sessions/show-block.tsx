@@ -23,11 +23,13 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
 
   const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
   const [selectedName, setSelectedName] = useState<string>('');
+  const [selectedDescription, setSelectedDescription] = useState<string>('');
   const [selectedNotes, setSelectedNotes] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [selectedVideo, setSelectedVideo] = useState<string>('');
-  const openImageModal = (name: string, notes: string, imageUrl: string, videoUrl: string) => {
+  const openImageModal = (name: string, description: string, notes: string, imageUrl: string, videoUrl: string) => {
     setSelectedName(name);
+    setSelectedDescription(description);
     setSelectedNotes(notes);
     setSelectedImage(imageUrl);
     setSelectedVideo(videoUrl);
@@ -36,6 +38,7 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
 
   const closeImageModal = () => {
     setIsImageModalOpen(false);
+    setSelectedDescription('');
     setSelectedName('');
     setSelectedNotes('');
     setSelectedImage('');
@@ -155,17 +158,12 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                           { exercise.weight && <div>{exercise.weight}</div> }
                         </div>
                         <div className="smx:hidden">
-                          { exercise.notes &&
-                            <div className="mt-2 text-sm text-gray-400">{exercise.notes}</div>
+                          { exercise.description &&
+                            <div className="mt-2 text-sm text-gray-400">{exercise.description}</div>
                           }
                         </div>
                       </div>
                       <div className="flex flex-row gap-2 items-center">
-                        <div className="sm:hidden">
-                          { exercise.notes &&
-                            <div className="text-sm text-gray-400">{exercise.notes}</div>
-                          }
-                        </div>
                         <div>
                           {exercise.image_url ? (
                             <div>
@@ -175,7 +173,7 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   alt={exercise.name}
                                   fill
                                   className="object-cover border-2 rounded-lg"
-                                  onClick={() => openImageModal(exercise.name, exercise.notes, exercise.image_url, exercise.video_url)}
+                                  onClick={() => openImageModal(exercise.name, exercise.description, exercise.notes, exercise.image_url, exercise.video_url)}
                                 />
                                 
                                 { exercise.video_url && (
@@ -196,6 +194,7 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   <div className="relative max-w-3xl w-full smx:p-3 smx:pb-5 sm:p-10 flex flex-col gap-5 rounded-lg border-2 bg-white">
 
                                     <div className="text-center text-xl font-bold text-black sm:text-center">{selectedName}</div>
+                                    <div className="text-gray-600 sm:text-center">{selectedDescription}</div>
                                     <div className="text-gray-600 sm:text-center">{selectedNotes}</div>
 
                                     <div className="relative aspect-[16/9] w-full" onClick={(e) => e.stopPropagation()} >
@@ -228,8 +227,16 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                             </div>
                           )}
                         </div>
+                        <div className="sm:hidden">
+                          { exercise.description &&
+                            <div className="text-sm text-gray-400">{exercise.description}</div>
+                          }
+                        </div>
                       </div>
                     </div>
+                    { exercise.notes &&
+                      <div className="text-sm text-gray-400">{exercise.notes}</div>
+                    }
                     { exercise.rest &&
                       <div className="mt-2">Descanso: {exercise.rest}</div>
                     }

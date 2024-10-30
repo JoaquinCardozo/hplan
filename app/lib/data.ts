@@ -442,6 +442,7 @@ export async function fetchSessionById(id: string) {
         workout_exercises.notes AS exercise_notes,
         workout_exercises.rest AS exercise_rest,
         exercises.name AS exercise_name,
+        exercises.description AS exercise_description,
         exercises.image_url AS exercise_image_url,
         exercises.video_url AS exercise_video_url
       FROM sessions
@@ -514,6 +515,7 @@ export async function fetchSessionById(id: string) {
             workout.exercises.push({
               exercise_id: row.exercise_id,
               name: row.exercise_name,
+              description: row.exercise_description,
               position: row.exercise_position,
               reps: row.exercise_reps,
               weight: row.exercise_weight,
