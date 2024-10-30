@@ -27,6 +27,7 @@ export default function EditWorkoutForm({ workout, exerciseNames, editCallback, 
           workout_id: workout.id,
           exercise_id: exerciseName.id,
           name: exerciseName.name,
+          description: "",
           position: addedExercises.length > 0 ? addedExercises[addedExercises.length - 1].position + 1 : 0,
           weight: "",
           reps: "",
@@ -268,8 +269,24 @@ export default function EditWorkoutForm({ workout, exerciseNames, editCallback, 
               .sort((a: WorkoutExercise, b: WorkoutExercise) => a.position - b.position)
               .map((exercise, index) => (
             <div key={index} className="mb-4 p-4 border rounded-md shadow-sm bg-white">
-              <div className="flex flex-row items-center">
-                <div className="text-lg font-medium" >{exercise.name}</div>
+              <div className="flex flex-row gap-2 items-center">
+                <div className="flex flex-col w-full grow">
+                  <div className="text-lg font-medium" >{exercise.name}</div>
+                  {/*<div className="text-sm text-gray-400" >{exercise.description}</div>*/}
+                </div>
+                {/*{exercise.image_url ? (
+                  <Image
+                    src={exercise.image_url}
+                    width={150}
+                    height={100}
+                    alt={exercise.name}
+                    className="border-2 rounded-lg"
+                  />
+                ): (
+                  <div className="w-[150px] h-[100px] border-2 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500">Sin imagen</span>
+                  </div>
+                )}*/}
                 <div className="grow text-right">
                   <button
                     type="button"

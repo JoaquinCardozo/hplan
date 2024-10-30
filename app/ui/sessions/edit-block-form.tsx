@@ -243,10 +243,16 @@ export default function EditBlockForm({ block, plan_id, exerciseNames }: { block
                         .map((exercise : WorkoutExercise) => (
                       <div key={workout.id + exercise.position + exercise.exercise_id}>
                         <div className="flex flex-row justify-between items-center gap-4">
-                          <div className="flex-grow flex gap-4 smx:flex-col smx:gap-1">
-                            <div>{exercise.reps}</div>
-                            <div>{exercise.name}</div>
-                            { exercise.weight && <div>({exercise.weight})</div> }
+                          <div className="flex flex-col">
+                            <div className="flex-grow flex gap-4 smx:flex-col smx:gap-1">
+                              <div>{exercise.reps}</div>
+                              <div>{exercise.name}</div>
+                              { exercise.weight && <div>({exercise.weight})</div> }
+                            </div>
+                            <div className="text-sm text-gray-500">{exercise.description}</div>
+                            { exercise.notes &&
+                              <div className="text-sm text-gray-500">Notas: {exercise.notes}</div>
+                            }
                           </div>
                           {exercise.image_url ? (
                             <Image

@@ -47,6 +47,7 @@ export type Workout = {
       workout_id: string;
       exercise_id: string;
       name: string;
+      description: string;
       position: number;
       reps: string;
       weight: string;
