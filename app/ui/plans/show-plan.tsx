@@ -28,7 +28,7 @@ export default function ShowPlan({ plan }: { plan: Plan }){
             </div>
           ) : (
             <Image 
-              src="/MrFitnessBanner.jpg" 
+              src="/MobilityProBanner.jpg" 
               alt="Imagen del plan"
               layout="responsive"
               width={16}
