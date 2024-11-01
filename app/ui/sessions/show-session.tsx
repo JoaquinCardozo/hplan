@@ -2,12 +2,14 @@
 
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
+import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import ShowBlock from '@/app/ui/sessions/show-block';
 import { Session, SessionBlock } from '@/app/lib/definitions'; 
 
 export default function ShowSession({ session }: { session: Session }){
-	
+	const [imgError, setImgError] = useState(false);
+
 	return (
 		<div>
     	<div>
@@ -15,7 +17,7 @@ export default function ShowSession({ session }: { session: Session }){
           <div className="grow text-2xl font-bold">{session.name}</div>
           <div className="grow text-sm text-gray-400">{session.description || "(Sin descripción)"}</div>
           
-          {session.image_url && 
+          {session.image_url && !imgError && 
             <div className="relative w-full mx-auto">
               <Image
                 src={session.image_url}
@@ -24,6 +26,8 @@ export default function ShowSession({ session }: { session: Session }){
                 width={16}
                 height={9} 
                 className="border-2 rounded-lg object-contain" 
+                onError={() => setImgError(true)}
+                // onLoad={() => setImgError(false)}
               />
             </div>
           }

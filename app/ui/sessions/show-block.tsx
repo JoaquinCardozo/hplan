@@ -117,6 +117,15 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
     }
   });
 
+  const [exercisesInvalidImage, setExercisesInvalidImage] = useState<{[key: string]: boolean }>({});
+  const setExercisesIdInvalidImage = (id: string, value: boolean) => {
+    console.log(id);
+    setExercisesInvalidImage((prevItems) => ({
+        ...prevItems,
+        [id]: value,
+    }));
+  };
+
   return (
     <div ref={componentRef} className="w-full">
       <div>
@@ -163,9 +172,9 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                           }
                         </div>
                       </div>
-                      <div className="flex flex-row gap-2 items-center">
+                      <div className="flex flex-row items-center">
                         <div>
-                          {exercise.image_url ? (
+                          {exercise.image_url && !exercisesInvalidImage[exercise.exercise_id] ? (
                             <div>
                               <div className="relative sm:w-[200px] smx:w-[150px] aspect-video">
                                 <Image
@@ -174,6 +183,7 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   fill
                                   className="object-cover border-2 rounded-lg"
                                   onClick={() => openImageModal(exercise.name, exercise.description, exercise.notes, exercise.image_url, exercise.video_url)}
+                                  onError={() => setExercisesIdInvalidImage(exercise.exercise_id, true)}
                                 />
                                 
                                 { exercise.video_url && (
@@ -185,49 +195,65 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   <ArrowsPointingOutIcon className="w-4" />
                                 </div>
                               </div>
-
-                              {isImageModalOpen && (
-                                <div
-                                  className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50"
-                                  onClick={closeImageModal}
-                                >
-                                  <div className="relative max-w-3xl w-full smx:p-3 smx:pb-5 sm:p-10 flex flex-col gap-5 rounded-lg border-2 bg-white">
-
-                                    <div className="text-center text-xl font-bold text-black sm:text-center">{selectedName}</div>
-                                    <div className="text-gray-600 sm:text-center">{selectedDescription}</div>
-                                    <div className="text-gray-600 sm:text-center">{selectedNotes}</div>
-
-                                    <div className="relative aspect-[16/9] w-full" onClick={(e) => e.stopPropagation()} >
-                                      <Image
-                                        src={selectedImage}
-                                        alt="Imagen de ejercicio"
-                                        fill
-                                        className="object-cover rounded-lg"
-                                      />
-                                    </div>
-
-                                    {selectedVideo && (
-                                      <div  className="relative aspect-[16/9] w-full h-full" onClick={(e) => e.stopPropagation()} >
-                                          <iframe 
-                                            src={selectedVideo}
-                                            title="Preview"
-                                            className="mt-2 border-2 w-full h-full rounded-lg"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                            allowFullScreen
-                                          />
-                                      </div>
-                                    )}
-                                  </div>
+                            </div>
+                          ): (
+                            // <div className="w-[150px] h-[100px] border-2 rounded-lg flex items-center justify-center">
+                            //   <span className="text-gray-500">Sin imagen</span>
+                            // </div>
+                            <div>
+                              { exercise.video_url && (
+                                <div 
+                                  onClick={() => openImageModal(exercise.name, exercise.description, exercise.notes, exercise.image_url, exercise.video_url + "?autoplay=1")}
+                                  className="relative aspect-[16/9] w-full h-full" >
+                                  <iframe 
+                                    src={exercise.video_url}
+                                    title="Preview"
+                                    className="mt-2 border-2 w-full h-full rounded-lg"
+                                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowFullScreen
+                                    style={{ pointerEvents: 'none' }}
+                                  />
                                 </div>
                               )}
                             </div>
-                          ): (
-                            <div className="w-[150px] h-[100px] border-2 rounded-lg flex items-center justify-center">
-                              <span className="text-gray-500">Sin imagen</span>
-                            </div>
                           )}
                         </div>
-                        <div className="sm:hidden">
+
+                        {isImageModalOpen && (
+                          <div
+                            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50"
+                            onClick={closeImageModal}
+                          >
+                            <div className="relative max-w-3xl w-full smx:p-3 smx:pb-5 sm:p-10 flex flex-col gap-5 rounded-lg border-2 bg-white">
+                              <div className="text-center text-xl font-bold text-black sm:text-center">{selectedName}</div>
+                              <div className="text-gray-600 sm:text-center">{selectedDescription}</div>
+                              <div className="text-gray-600 sm:text-center">{selectedNotes}</div>
+
+                              <div className="relative aspect-[16/9] w-full" onClick={(e) => e.stopPropagation()} >
+                                <Image
+                                  src={selectedImage}
+                                  alt="Imagen de ejercicio"
+                                  fill
+                                  className="object-cover rounded-lg"
+                                />
+                              </div>
+
+                              {selectedVideo && (
+                                <div  className="relative aspect-[16/9] w-full h-full" onClick={(e) => e.stopPropagation()} >
+                                    <iframe 
+                                      src={selectedVideo}
+                                      title="Preview"
+                                      className="mt-2 border-2 w-full h-full rounded-lg"
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                      allowFullScreen
+                                    />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="sm:hidden ml-2">
                           { exercise.description &&
                             <div className="text-sm text-gray-400">{exercise.description}</div>
                           }
@@ -235,10 +261,10 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                       </div>
                     </div>
                     { exercise.notes &&
-                      <div className="text-sm text-gray-400">{exercise.notes}</div>
+                      <div className="ml-2 mt-1 text-sm text-gray-400">{exercise.notes}</div>
                     }
                     { exercise.rest &&
-                      <div className="mt-2">Descanso: {exercise.rest}</div>
+                      <div className="ml-2 mt-1 mt-2">Descanso: {exercise.rest}</div>
                     }
                   </div>
                 ))}
