@@ -126,6 +126,9 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
     }));
   };
 
+  const [isLoading, setIsLoading] = useState(true);
+
+
   return (
     <div ref={componentRef} className="w-full">
       <div>
@@ -184,6 +187,7 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                                   className="object-cover border-2 rounded-lg"
                                   onClick={() => openImageModal(exercise.name, exercise.description, exercise.notes, exercise.image_url, exercise.video_url)}
                                   onError={() => setExercisesIdInvalidImage(exercise.exercise_id, true)}
+                                  placeholder = 'empty'
                                 />
                                 
                                 { exercise.video_url && (

@@ -27,7 +27,7 @@ export default function ShowSession({ session }: { session: Session }){
                 height={9} 
                 className="border-2 rounded-lg object-contain" 
                 onError={() => setImgError(true)}
-                // onLoad={() => setImgError(false)}
+                placeholder = 'empty'
               />
             </div>
           }
