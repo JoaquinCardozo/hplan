@@ -13,7 +13,7 @@ export default function ShowPlan({ plan }: { plan: Plan }){
     <div>
       <div className="flex flex-row items-center text-center">
         <div className="grow flex flex-col gap-2 items-center text-center">
-          {plan.image_url && !imgError ? (
+          {plan.image_url && !imgError &&
             <div className="relative w-full mx-auto">
               <Image
                 src={plan.image_url}
@@ -26,16 +26,8 @@ export default function ShowPlan({ plan }: { plan: Plan }){
                 placeholder = 'empty'
               />
             </div>
-          ) : (
-            <Image 
-              src="/MobilityProBanner.jpg" 
-              alt="Imagen del plan"
-              layout="responsive"
-              width={16}
-              height={9} 
-              className="border-2 rounded-lg object-contain" 
-            />
-          )}
+          }
+          
           <div className="mt-5 text-3xl smx:text-2xl font-bold">{plan.name}</div>
           <div className="text-sm text-gray-400">{plan.description || "(Sin descripción)"}</div>
 

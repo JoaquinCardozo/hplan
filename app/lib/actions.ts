@@ -7,8 +7,8 @@ import { redirect } from 'next/navigation';
 import type { User, Gym, Session, SessionBlock } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
-import { put } from '@vercel/blob';
- 
+// import { put } from '@vercel/blob';
+import { S3Client, PutObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3';
 
 export type FormState = {
   errors?: string[];
@@ -379,10 +379,14 @@ export async function createExercise(prevState: CreateExerciseState, formData: F
 
   let image_url = "";
   if (image && image.size && image.size > 0) {
-    const blob = await put("exercise_images/" + image.name, image, {
-      access: 'public',
-    });
-    image_url = blob.url;
+    // Vercel Blob
+    // const blob = await put("exercise_images/" + image.name, image, {
+    //   access: 'public',
+    // });
+    // image_url = blob.url;
+   
+    // AWS s3
+    image_url = await uploadImage(image, 'exercise_images', name);
   } 
 
   try {
@@ -396,6 +400,36 @@ export async function createExercise(prevState: CreateExerciseState, formData: F
 
   revalidatePath('/dashboard/exercises');
   redirect('/dashboard/exercises');
+}
+
+async function uploadImage(image: File, directory: string, name: string){
+  const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+    },
+  });
+  const fileName = `${directory}/${name}${Date.now()}`;
+  const arrayBuffer = await image.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const uploadParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: fileName,
+      Body: buffer,
+      ContentType: image.type,
+      ACL: ObjectCannedACL.public_read,
+  };
+
+  try {
+    const result = await s3Client.send(new PutObjectCommand(uploadParams));
+    const url = `https://hplan.s3.us-east-1.amazonaws.com/${fileName}`;
+    return url;
+
+  } catch (err) {
+    console.error("Error uploading image:", err);
+    return '';
+  }
 }
 
 export async function updateExercise(id: string, prevState: CreateExerciseState, formData: FormData) {
@@ -419,10 +453,14 @@ export async function updateExercise(id: string, prevState: CreateExerciseState,
 
   let image_url = "";
   if (image && image.size && image.size > 0) {
-    const blob = await put("exercise_images/" + image.name, image, {
-      access: 'public',
-    });
-    image_url = blob.url;
+    // Vercel Blob
+    // const blob = await put("exercise_images/" + image.name, image, {
+    //   access: 'public',
+    // });
+    // image_url = blob.url;
+   
+    // AWS s3
+    image_url = await uploadImage(image, 'exercise_images', name);
   }
  
   try {
@@ -674,10 +712,14 @@ export async function updatePlan(id: string, prevState: CreatePlanState, formDat
 
   let image_url = "";
   if (image && image.size && image.size > 0) {
-    const blob = await put("plan_images/" + image.name, image, {
-      access: 'public',
-    });
-    image_url = blob.url;
+    // Vercel Blob
+    // const blob = await put("exercise_images/" + image.name, image, {
+    //   access: 'public',
+    // });
+    // image_url = blob.url;
+   
+    // AWS s3
+    image_url = await uploadImage(image, 'plan_images', name);
   }
 
   let result;
@@ -859,10 +901,14 @@ export async function updateSession(id: string, prevState: CreatePlanState, form
 
   let image_url = "";
   if (image && image.size && image.size > 0) {
-    const blob = await put("session_images/" + image.name, image, {
-      access: 'public',
-    });
-    image_url = blob.url;
+    // Vercel Blob
+    // const blob = await put("exercise_images/" + image.name, image, {
+    //   access: 'public',
+    // });
+    // image_url = blob.url;
+   
+    // AWS s3
+    image_url = await uploadImage(image, 'session_images', name);
   }
   let result;
 
