@@ -9,8 +9,7 @@
     "seed": "node -r dotenv/config ./scripts/seed.js",
     "migrate": "node -r dotenv/config ./scripts/migrate.js",
     "check-types": "tsc --noemit",
-    "lint": "npm run check-types && next lint",
-    "postinstall": "gifsicle --version"
+    "lint": "npm run check-types && next lint"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.685.0",
