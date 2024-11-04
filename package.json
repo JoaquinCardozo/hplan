@@ -22,6 +22,7 @@
     "bcrypt": "^5.1.1",
     "clsx": "^2.0.0",
     "cookies-next": "^4.2.1",
+    "gifsicle": "^7.0.1",
     "next": "^14.2.8",
     "postcss": "8.4.31",
     "react": "^18.2.0",
@@ -41,7 +42,6 @@
     "eslint": "^8.52.0",
     "eslint-config-next": "^14.0.0",
     "eslint-config-prettier": "9.0.0",
-    "gifsicle": "^7.0.1",
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "0.5.4"
   },
