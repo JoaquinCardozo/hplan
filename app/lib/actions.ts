@@ -1193,9 +1193,9 @@ async function uploadImage(image: File, directory: string, name: string, resize:
   const fileName = `${directory}/${name}${Date.now()}`;
   const arrayBuffer = await image.arrayBuffer();
   let buffer = Buffer.from(arrayBuffer);
-  if (resize){
-    buffer = await resizeGif(buffer, 320, 180);
-  }
+  // if (resize){
+  //   buffer = await resizeGif(buffer, 320, 180);
+  // }
 
   const uploadParams = {
       Bucket: process.env.AWS_BUCKET_NAME,
@@ -1216,33 +1216,33 @@ async function uploadImage(image: File, directory: string, name: string, resize:
   }
 }
 
-async function resizeGif(buffer: Buffer, width: number, height: number): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const gifsicle = 'gifsicle';
-    const args = [
-      '--optimize=3', 
-      '--lossy=40',
-      '--resize', `${width}x${height}`,
-    ];
-    const gifProcess = spawn(gifsicle, args);
+// async function resizeGif(buffer: Buffer, width: number, height: number): Promise<Buffer> {
+//   return new Promise((resolve, reject) => {
+//     const gifsicle = 'gifsicle';
+//     const args = [
+//       '--optimize=3', 
+//       '--lossy=40',
+//       '--resize', `${width}x${height}`,
+//     ];
+//     const gifProcess = spawn(gifsicle, args);
 
-    let resizedBuffer: Buffer[] = [];
+//     let resizedBuffer: Buffer[] = [];
 
-    gifProcess.stdin.write(buffer);
-    gifProcess.stdin.end();
+//     gifProcess.stdin.write(buffer);
+//     gifProcess.stdin.end();
 
-    gifProcess.stdout.on('data', (data) => {
-      resizedBuffer.push(data);
-    });
+//     gifProcess.stdout.on('data', (data) => {
+//       resizedBuffer.push(data);
+//     });
 
-    gifProcess.on('close', (code) => {
-      if (code === 0) {
-        resolve(Buffer.concat(resizedBuffer));
-      } else {
-        reject(new Error(`gifsicle exited with code ${code}`));
-      }
-    });
+//     gifProcess.on('close', (code) => {
+//       if (code === 0) {
+//         resolve(Buffer.concat(resizedBuffer));
+//       } else {
+//         reject(new Error(`gifsicle exited with code ${code}`));
+//       }
+//     });
 
-    gifProcess.on('error', reject);
-  });
-}
+//     gifProcess.on('error', reject);
+//   });
+// }
