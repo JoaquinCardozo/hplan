@@ -9,6 +9,8 @@ import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 // import { put } from '@vercel/blob';
 import { S3Client, PutObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3';
+import { spawn } from 'child_process';
+import { Readable } from 'stream';
 
 export type FormState = {
   errors?: string[];
@@ -386,7 +388,7 @@ export async function createExercise(prevState: CreateExerciseState, formData: F
     // image_url = blob.url;
    
     // AWS s3
-    image_url = await uploadImage(image, 'exercise_images', name);
+    image_url = await uploadImage(image, 'exercise_images', name, true);
   } 
 
   try {
@@ -400,36 +402,6 @@ export async function createExercise(prevState: CreateExerciseState, formData: F
 
   revalidatePath('/dashboard/exercises');
   redirect('/dashboard/exercises');
-}
-
-async function uploadImage(image: File, directory: string, name: string){
-  const s3Client = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-    },
-  });
-  const fileName = `${directory}/${name}${Date.now()}`;
-  const arrayBuffer = await image.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const uploadParams = {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: fileName,
-      Body: buffer,
-      ContentType: image.type,
-      ACL: ObjectCannedACL.public_read,
-  };
-
-  try {
-    const result = await s3Client.send(new PutObjectCommand(uploadParams));
-    const url = `https://hplan.s3.us-east-1.amazonaws.com/${fileName}`;
-    return url;
-
-  } catch (err) {
-    console.error("Error uploading image:", err);
-    return '';
-  }
 }
 
 export async function updateExercise(id: string, prevState: CreateExerciseState, formData: FormData) {
@@ -460,7 +432,7 @@ export async function updateExercise(id: string, prevState: CreateExerciseState,
     // image_url = blob.url;
    
     // AWS s3
-    image_url = await uploadImage(image, 'exercise_images', name);
+    image_url = await uploadImage(image, 'exercise_images', name, true);
   }
  
   try {
@@ -1204,4 +1176,73 @@ export async function deleteInvoice(id: string) {
 	} catch (error){
 		return { message: 'Database Error: Failed to Delete Invoice' };
 	}
+}
+
+
+//___________________________
+
+async function uploadImage(image: File, directory: string, name: string, resize: boolean = false){
+  const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+    },
+  });
+  name = name.replace(/[ /]/g, "-");
+  const fileName = `${directory}/${name}${Date.now()}`;
+  const arrayBuffer = await image.arrayBuffer();
+  let buffer = Buffer.from(arrayBuffer);
+  if (resize){
+    buffer = await resizeGif(buffer, 320, 180);
+  }
+
+  const uploadParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: fileName,
+      Body: buffer,
+      ContentType: image.type,
+      ACL: ObjectCannedACL.public_read,
+  };
+
+  try {
+    const result = await s3Client.send(new PutObjectCommand(uploadParams));
+    const url = `https://hplan.s3.us-east-1.amazonaws.com/${fileName}`;
+    return url;
+
+  } catch (err) {
+    console.error("Error uploading image:", err);
+    return '';
+  }
+}
+
+async function resizeGif(buffer: Buffer, width: number, height: number): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const gifsicle = 'gifsicle';
+    const args = [
+      '--optimize=3', 
+      '--lossy=40',
+      '--resize', `${width}x${height}`,
+    ];
+    const gifProcess = spawn(gifsicle, args);
+
+    let resizedBuffer: Buffer[] = [];
+
+    gifProcess.stdin.write(buffer);
+    gifProcess.stdin.end();
+
+    gifProcess.stdout.on('data', (data) => {
+      resizedBuffer.push(data);
+    });
+
+    gifProcess.on('close', (code) => {
+      if (code === 0) {
+        resolve(Buffer.concat(resizedBuffer));
+      } else {
+        reject(new Error(`gifsicle exited with code ${code}`));
+      }
+    });
+
+    gifProcess.on('error', reject);
+  });
 }
