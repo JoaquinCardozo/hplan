@@ -432,6 +432,7 @@ export async function fetchSessionById(id: string) {
         session_blocks.id AS block_id,
         session_blocks.name AS block_name,
         session_blocks.description AS block_description,
+        session_blocks.video_url AS block_video_url,
         session_blocks.position AS block_position,
         session_blocks_workouts.position AS workout_position,
         workouts.id AS workout_id,
@@ -488,6 +489,7 @@ export async function fetchSessionById(id: string) {
             id: row.block_id,
             name: row.block_name,
             description: row.block_description,
+            video_url: row.block_video_url,
             position: row.block_position,
             session_id: row.id,
             workouts: []

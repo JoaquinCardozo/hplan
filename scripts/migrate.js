@@ -255,6 +255,19 @@ async function migrate(client) {
     throw error;
   }
 
+  // Add column "video_url" to "session_blocks" table
+  try {
+    await client.sql`
+      ALTER TABLE session_blocks
+      ADD COLUMN IF NOT EXISTS video_url VARCHAR(255);
+    `;
+    
+    console.log('Column "video_url" added to "session_blocks" table');
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
   // Create the "session_blocks_workouts" table if it doesn't exist
   try {
     await client.sql`

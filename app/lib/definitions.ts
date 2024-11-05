@@ -86,6 +86,7 @@ export type SessionBlock = {
   id: string;
   name: string;
   description: string;
+  video_url: string;
   session_id: string;
   plan_id: string;
   position: number;

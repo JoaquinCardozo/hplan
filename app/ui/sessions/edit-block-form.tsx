@@ -28,6 +28,7 @@ export default function EditBlockForm({ block, plan_id, exerciseNames }: { block
     if (result.success) {
       block.name = result.block.name;
       block.description = result.block.description;
+      block.video_url = result.block.video_url;
       setIsEditing(false);
     }
   }
@@ -93,6 +94,17 @@ export default function EditBlockForm({ block, plan_id, exerciseNames }: { block
     }
   });
 
+  const videoUrlRef = useRef<HTMLInputElement>(null);
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | undefined>();
+
+  useEffect(() => {
+    setPreviewVideoUrl(block.video_url);
+  }, [block.video_url]);
+
+  const handleVideoPreview = (link : string) => {
+    return 'https://www.youtube.com/embed/' + link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+
   return (
     <div className="grow" ref={componentRef}>
 
@@ -137,6 +149,43 @@ export default function EditBlockForm({ block, plan_id, exerciseNames }: { block
               aria-describedby="description-error"
             />
           </div>
+
+          <div className="mb-4">
+            <label htmlFor="video_url" className="mb-2 block text-sm">
+              Video
+            </label>
+            <div className="flex gap-4">
+              <input 
+                id="video_url"
+                name="video_url"
+                type="text"
+                placeholder="Ingresa el enlace al video"
+                defaultValue={block.video_url}
+                className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
+                aria-describedby="video_url-error"
+                ref={videoUrlRef}
+              />
+              <button type="button" className="rounded-md border p-2 hover:bg-gray-100 text-sm font-medium text-gray-600"
+              onClick={()=> {
+                if (videoUrlRef.current)
+                  setPreviewVideoUrl(videoUrlRef.current.value);
+              }}>
+                <span>Preview</span>
+              </button>
+            </div>
+            {previewVideoUrl && (
+              <iframe 
+                width="150" 
+                height="100" 
+                src={handleVideoPreview(previewVideoUrl)}
+                title="Preview"
+                className="mt-2 border-2 rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              />        
+            )}
+          </div>
+
           <div id="name-error" aria-live="polite" aria-atomic="true">
             { state.errors?.description && state.errors.description.map((error: string) => (
                 <p key={error}> { error } </p>
@@ -196,7 +245,24 @@ export default function EditBlockForm({ block, plan_id, exerciseNames }: { block
       </div>
 
       { !isCollapsed &&
-        <div className="m-2 mt-5">
+        <div className="flex flex-col">
+          <div className="w-[300px] m-auto mt-4 mb-4">
+            {block.video_url ? ( 
+              <div className="text-center grow relative w-full max-w-[500px] mt-5 aspect-video">
+                <iframe 
+                  src={block.video_url}
+                  title="Preview"
+                  className="absolute top-0 left-0 w-full h-full border-2 rounded-lg"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                /> 
+              </div>
+            ) : (
+              <div className="mb-4 p-4 border rounded-md shadow-sm bg-white">
+                <p className="text-sm text-gray-500 text-center">Sin video</p>
+              </div>
+            )}
+          </div>
           <div className="flex flex-row items-center">
             <label htmlFor="exercise" className="grow mb-2 block">
               Circuitos

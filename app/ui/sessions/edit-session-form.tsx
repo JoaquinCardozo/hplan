@@ -38,6 +38,7 @@ export default function EditSessionForm({ session, exerciseNames }: { session: S
       id: '',
       name: 'Bloque ' + (addedBlocks.length + 1),
       description: '',
+      video_url: '',
       position: addedBlocks.length > 0 ? addedBlocks[addedBlocks.length - 1].position + 1 : 0,
       session_id: session.id,
       plan_id: session.plan_id,

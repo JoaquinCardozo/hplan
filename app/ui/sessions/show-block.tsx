@@ -148,7 +148,18 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
       <div>
       { !isCollapsed &&
         <div className="m-4 smx:m-2 mt-2"> 
-          { block.description && <div className="pb-4 text-sm text-gray-400">{block.description}</div> }         
+          { block.description && <div className="pb-4 text-sm text-gray-400">{block.description}</div> }
+          { block.video_url && ( 
+            <div className="text-center grow relative w-full sm:max-w-[500px] smx:max-w-[400px] m-auto mb-5 aspect-video">
+              <iframe 
+                src={block.video_url}
+                title="Preview"
+                className="absolute top-0 left-0 w-full h-full border-2 rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              /> 
+            </div>
+          )}
           
           <div className="flex flex-col gap-4 ">
             {addedWorkouts

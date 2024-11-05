@@ -904,6 +904,7 @@ const SessionBlockFormSchema = z.object({
   id: z.string(),
   name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
   description: z.string().nullable(),
+  video_url: z.string().nullable(),
   position: z.coerce.number(),
   session_id: z.string().min(1, { message: 'Session id es obligatorio.' }),
   plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' })
@@ -914,6 +915,7 @@ export async function createSessionBlock(block: SessionBlock) {
   const validatedFields = CreateSessionBlockFormSchema.safeParse({
     name: block.name,
     description: block.description,
+    video_url: block.video_url,
     position: block.position,
     session_id: block.session_id,
     plan_id: block.plan_id,
@@ -949,6 +951,7 @@ export async function updateSessionBlock(id: string, prevState: CreatePlanState,
   const validatedFields = CreateSessionBlockFormSchema.safeParse({
     name: formData.get('name'),
     description: formData.get('description'),
+    video_url: formData.get('video_url'),
     position: formData.get('position'),
     session_id: formData.get('session_id'),
     plan_id: formData.get('plan_id')
@@ -960,15 +963,18 @@ export async function updateSessionBlock(id: string, prevState: CreatePlanState,
       message: 'Failed to Update SessionBlock.',
     };
   } 
-  const { name, description, position, session_id, plan_id } = validatedFields.data;
+  let { name, description, position, video_url, session_id, plan_id } = validatedFields.data;
+  if (video_url) {
+    video_url = 'https://www.youtube.com/embed/' + video_url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+  
   let result;
-
   try {
     result = await sql`
       UPDATE session_blocks
-      SET name = ${name}, description = ${description}, position = ${position}
+      SET name = ${name}, description = ${description}, position = ${position}, video_url = ${video_url}
       WHERE id = ${id}
-      RETURNING name, description
+      RETURNING name, description, video_url
     `;
   } catch (error) {
     console.log(error);
