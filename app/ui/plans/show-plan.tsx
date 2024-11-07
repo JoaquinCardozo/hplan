@@ -51,10 +51,26 @@ export default function ShowPlan({ plan }: { plan: Plan }){
             .map((session, index) => (
           <div key={index} className="mb-4 border rounded-md shadow-sm bg-white">
             <Link href={`/plans/${plan.id}/sessions/${session.id}`}>
-              <div className="p-4 flex flex-row items-center hover:bg-gray-100">
-                <div className="flex flex-col">
+              <div className="p-4 flex flex-row items-center hover:bg-gray-100 w-[100%]">
+                <div className="flex flex-col w-full text-center gap-1">
                   <div className="text-lg font-bold">{session.name}</div>
                   <div className="text-sm text-gray-400">{session.description}</div>
+                  {session.image_url && !imgError &&
+                    <div className="max-w-[500px] m-auto"> 
+                      <div className="relative w-full mx-auto">
+                        <Image
+                          src={session.image_url}
+                          alt="Imagen del plan"
+                          layout="responsive"
+                          width={16}
+                          height={9} 
+                          className="border-2 rounded-lg object-contain" 
+                          onError={() => setImgError(true)}
+                          placeholder = 'empty'
+                        />
+                      </div>
+                    </div>
+                  }
                 </div>
               </div>
             </Link>
