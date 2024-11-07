@@ -804,6 +804,111 @@ export async function createSession(session: Session) {
   }
 }
 
+export async function duplicateSession(original_session_id: string, position: number) {
+  const client = await db.connect();
+
+  try {
+    await client.sql`BEGIN`;
+
+    // Duplicar la sesión
+    const originalSession = await client.sql`
+      SELECT plan_id, name, description, image_url, video_url FROM sessions
+      WHERE id = ${original_session_id}
+    `;
+    if (!originalSession.rows.length) throw new Error("La sesión original no existe.");
+
+    const { plan_id, name, description, image_url, video_url } = originalSession.rows[0];
+
+    const newSession = await client.sql`
+      INSERT INTO sessions (plan_id, name, description, image_url, video_url, position)
+      VALUES (${plan_id}, ${name}, ${description}, ${image_url}, ${video_url}, ${position})
+      RETURNING id, name, description, position, image_url, video_url, plan_id
+    `;
+    const new_session_id = newSession.rows[0].id;
+    // TODO clonar imagenes
+    // TODO clonar imagenes
+    // TODO clonar imagenes
+
+    // Duplicar bloques de sesión
+    const originalBlocks = await client.sql`
+      SELECT id, name, description, video_url, position
+      FROM session_blocks
+      WHERE session_id = ${original_session_id}
+    `;
+
+    for (const block of originalBlocks.rows) {
+      const { name, description, video_url, position } = block;
+
+      const newBlock = await client.sql`
+        INSERT INTO session_blocks (session_id, name, description, video_url, position)
+        VALUES (${new_session_id}, ${name}, ${description}, ${video_url}, ${position})
+        RETURNING id
+      `;
+      const new_block_id = newBlock.rows[0].id;
+
+      // Duplicar workouts
+      const originalSessionBlockWorkouts = await client.sql`
+        SELECT session_block_id, workout_id
+        FROM session_blocks_workouts
+        WHERE session_block_id = ${block.id}
+      `;
+
+      for (const sessionBlockWorkout of originalSessionBlockWorkouts.rows) {
+
+        // Duplicar entrenamientos del bloque
+        const workout = await client.sql`
+          SELECT id, name, description, workout_type, workout_value
+          FROM workouts
+          WHERE id = ${sessionBlockWorkout.workout_id}
+        `;
+
+        const { name, description, workout_type, workout_value } = workout.rows[0];
+
+        const newWorkout = await client.sql`
+          INSERT INTO workouts (name, description, workout_type, workout_value)
+          VALUES (${name}, ${description}, ${workout_type}, ${workout_value})
+          RETURNING id
+        `;
+        const new_workout_id = newWorkout.rows[0].id;
+
+        await client.sql`
+          INSERT INTO session_blocks_workouts (session_block_id, workout_id)
+          VALUES (${new_block_id}, ${new_workout_id})
+        `;
+
+        // Duplicar ejercicios del entrenamiento
+        const originalExercises = await client.sql`
+          SELECT exercise_id, position, reps, weight, rest, notes
+          FROM workout_exercises
+          WHERE workout_id = ${sessionBlockWorkout.workout_id}
+        `;
+
+        for (const exercise of originalExercises.rows) {
+          const { exercise_id, position, reps, weight, rest, notes } = exercise;
+
+          await client.sql`
+            INSERT INTO workout_exercises (workout_id, exercise_id, position, reps, weight, rest, notes)
+            VALUES (${new_workout_id}, ${exercise_id}, ${position}, ${reps}, ${weight}, ${rest}, ${notes})
+          `;
+        }
+      }
+    }
+
+    await client.sql`COMMIT`;
+    revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+
+    return newSession.rows[0];
+
+  } catch (error) {
+
+    await client.sql`ROLLBACK`;
+    console.log("Error duplicando sesión:", error);
+    return { message: 'Error de base de datos: Falló la duplicación de la sesión' };
+  } finally {
+    client.release();
+  }
+}
+
 export async function deleteSession(id: string) {
   const client = await db.connect();
   try {
@@ -967,7 +1072,7 @@ export async function updateSessionBlock(id: string, prevState: CreatePlanState,
   if (video_url) {
     video_url = 'https://www.youtube.com/embed/' + video_url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
   }
-  
+
   let result;
   try {
     result = await sql`

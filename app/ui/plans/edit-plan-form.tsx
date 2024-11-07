@@ -1,13 +1,13 @@
 'use client';
 
 import { Plan, Session } from '@/app/lib/definitions'; 
-import { updatePlan, createSession, deleteSession } from '@/app/lib/actions';
+import { updatePlan, createSession, deleteSession, duplicateSession } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlusIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, PencilIcon, Square2StackIcon } from '@heroicons/react/24/outline';
 
 export default function EditPlanForm({ plan }: { plan: Plan }){
   const initialState = { message: null, errors: {} };
@@ -74,6 +74,25 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
       else {
         setDeleteError(result.message || 'Error desconocido');
       }
+    }
+  };
+
+  async function handleDuplicateSession(index: number) {
+    const isConfirmed = window.confirm("¿Duplicar esta sesión?");
+    if (isConfirmed) {
+      const position = addedSessions.length > 0 ? addedSessions[addedSessions.length - 1].position + 1 : 0;
+      const result = await duplicateSession(addedSessions[index].id, position);
+      const newSession : Session = {
+        id: result.id,
+        name: result.name,
+        description: result.description,
+        position: result.position,
+        plan_id: result.plan_id,
+        image_url: result.image_url,
+        video_url: result.video_url,
+        blocks: []
+      };
+      setAddedSessions([...addedSessions, newSession]);
     }
   };
 
@@ -316,25 +335,26 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
               .sort((a: Session, b: Session) => a.position - b.position)
               .map((session, index) => (
             <div key={index} className="mb-4 p-4 border rounded-md shadow-sm bg-white">
-              <div className="flex flex-row items-center">
-                <div className="flex flex-col">
-                  <div className="text-lg font-medium">{session.name}</div>
-                  <div className="text-sm">{session.description}</div>
-                  {/*<div className="text-sm">Position {session.position}</div>*/}
+              <div className="flex flex-col">
+                <div className="flex flex-row">
+                  <div className="grow text-lg font-medium">{session.name}</div>
+                  <div className="flex flex-row gap-1 text-right mb-2">
+                    <button title="Editar" className="rounded-md border p-2 hover:bg-gray-100">
+                      <Link href={`/dashboard/plans/${plan.id}/edit/sessions/${session.id}/edit`}>
+                        <PencilIcon className="w-5" />
+                      </Link>
+                    </button>
+                    <button title="Duplicar" className="rounded-md border p-2 hover:bg-gray-100"
+                      onClick={() => handleDuplicateSession(index)} >
+                      <Square2StackIcon className="w-5" />
+                    </button>
+                    <button title="Borrar" type="button" className="rounded-md border p-2 hover:bg-gray-100"
+                      onClick={() => handleDeleteSession(index)} >
+                      <TrashIcon className="w-5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="grow text-right">
-                  <button className="rounded-md border p-2 hover:bg-gray-100">
-                    <Link href={`/dashboard/plans/${plan.id}/edit/sessions/${session.id}/edit`}>
-                      <PencilIcon className="w-5" />
-                    </Link>
-                  </button>
-                  <button type="button"
-                    className="rounded-md border p-2 hover:bg-gray-100"
-                    onClick={() => handleDeleteSession(index)}
-                  >
-                    <TrashIcon className="w-5" />
-                  </button>
-                </div>
+                <div className="text-sm">{session.description}</div>
               </div>
             </div>
           ))}
