@@ -12,7 +12,8 @@ import {
   Workout,
   Revenue,
   Plan,
-  Session
+  Session,
+  Cicle
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -360,7 +361,7 @@ export async function fetchPlansTotalPages(query: string){
   }
 }
 
-export async function fetchPlanById(id: string){
+export async function fetchPlanById(id: string) {
   noStore();
   try {
     const data = await sql`
@@ -370,14 +371,13 @@ export async function fetchPlanById(id: string){
         plans.description,
         plans.image_url,
         plans.video_url,
-        sessions.id AS session_id,
-        sessions.name AS session_name,
-        sessions.description AS session_description,
-        sessions.position AS session_position,
-        sessions.image_url AS session_image_url,
-        sessions.video_url AS session_video_url
+        cicles.id AS cicle_id,
+        cicles.name AS cicle_name,
+        cicles.description AS cicle_description,
+        cicles.image_url AS cicle_image_url,
+        cicles.video_url AS cicle_video_url
       FROM plans
-      LEFT JOIN sessions ON sessions.plan_id = plans.id
+      LEFT JOIN cicles ON cicles.plan_id = plans.id
       WHERE plans.id = ${id};
     `;
   
@@ -385,31 +385,105 @@ export async function fetchPlanById(id: string){
       return null;
     }
 
-    const planWithSessions: Plan = {
+    // Crear objeto del plan
+    const planWithCicles: Plan = {
       id: data.rows[0].id,
       name: data.rows[0].name,
       description: data.rows[0].description,
       image_url: data.rows[0].image_url,
       video_url: data.rows[0].video_url,
+      cicles: []
+    };
+
+    // Usamos un mapa auxiliar para organizar los ciclos y evitar duplicados
+    const cicleMap = new Map();
+
+    data.rows.forEach(row => {
+      // Si existe el ciclo
+      if (row.cicle_id) {
+        // Si el ciclo ya está en el mapa, simplemente obtenlo
+        let cicle = cicleMap.get(row.cicle_id);
+
+        if (!cicle) {
+          // Si no existe, creamos el ciclo y lo añadimos al mapa
+          cicle = {
+            id: row.cicle_id,
+            name: row.cicle_name,
+            description: row.cicle_description,
+            image_url: row.cicle_image_url,
+            video_url: row.cicle_video_url,
+            plan_id: row.id,
+            sessions: []
+          };
+          cicleMap.set(row.cicle_id, cicle);
+          planWithCicles.cicles.push(cicle);
+        }
+      }
+    });
+
+    return planWithCicles;
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch plan');
+  }
+}
+
+export async function fetchCicleById(id: string){
+  noStore();
+  try {
+    const data = await sql`
+      SELECT
+        cicles.id,
+        cicles.name,
+        cicles.description,
+        cicles.position,
+        cicles.image_url,
+        cicles.video_url,
+        cicles.plan_id,
+        sessions.id AS session_id,
+        sessions.name AS session_name,
+        sessions.description AS session_description,
+        sessions.position AS session_position,
+        sessions.image_url AS session_image_url,
+        sessions.video_url AS session_video_url
+      FROM cicles
+      LEFT JOIN sessions ON sessions.cicle_id = cicles.id
+      WHERE cicles.id = ${id};
+    `;
+  
+    if (data.rows.length === 0) {
+      return null;
+    }
+
+    const cicleWithSessions: Cicle = {
+      id: data.rows[0].id,
+      name: data.rows[0].name,
+      description: data.rows[0].description,
+      position: data.rows[0].position,
+      image_url: data.rows[0].image_url,
+      video_url: data.rows[0].video_url,
+      plan_id: data.rows[0].plan_id,
       sessions: []
     };
 
     data.rows.forEach(row => {
       if (row.session_id) {
-        planWithSessions.sessions.push({
+        cicleWithSessions.sessions.push({
           id: row.session_id,
           name: row.session_name,
           description: row.session_description,
           position: row.session_position,
           image_url: row.session_image_url,
           video_url: row.session_video_url,
-          plan_id: data.rows[0].id,
+          cicle_id: data.rows[0].id,
+          plan_id: data.rows[0].plan_id,
           blocks: []
         });
       }
     });
 
-    return planWithSessions;
+    return cicleWithSessions;
 
   } catch (error) {
     console.error('Database Error:', error);
@@ -426,6 +500,7 @@ export async function fetchSessionById(id: string) {
         sessions.name,
         sessions.description,
         sessions.plan_id,
+        sessions.cicle_id,
         sessions.position,
         sessions.image_url,
         sessions.video_url,
@@ -470,6 +545,7 @@ export async function fetchSessionById(id: string) {
       image_url: data.rows[0].image_url,
       video_url: data.rows[0].video_url,
       plan_id: data.rows[0].plan_id,
+      cicle_id: data.rows[0].cicle_id,
       blocks: []
     };
 

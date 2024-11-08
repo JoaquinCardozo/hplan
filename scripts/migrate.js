@@ -175,6 +175,27 @@ async function migrate(client) {
     throw error;
   }
 
+  // Create the "cicles" table if it doesn't exist
+  try {
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS cicles (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255),
+        description VARCHAR(255),
+        image_url VARCHAR(255),
+        video_url VARCHAR(255),
+        plan_id UUID NOT NULL,
+        FOREIGN KEY (plan_id) REFERENCES plans(id),
+        position INT NOT NULL
+      );
+    `;
+
+    console.log(`Created "clicles" table`);
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
   // Create the "sessions" table if it doesn't exist
   try {
     await client.sql`
@@ -219,6 +240,25 @@ async function migrate(client) {
     
     console.log('Column "image_url" added to "sessions" table');
     console.log('Column "video_url" added to "sessions" table');
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    throw error;
+  }
+
+  // Add column "cicle_id" to "sessions" table
+  try {
+    await client.sql`
+      ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS cicle_id UUID;
+    `;
+
+    await client.sql`
+      ALTER TABLE sessions
+      ADD CONSTRAINT fk_cicle
+      FOREIGN KEY (cicle_id) REFERENCES cicles(id) ON DELETE CASCADE;
+    `;
+    
+    console.log('Column "cicle_id" added to "sessions" table');
   } catch (error) {
     console.error('Error migrating database:', error);
     throw error;

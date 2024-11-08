@@ -1,7 +1,7 @@
 'use client';
 
-import { Plan, Cicle } from '@/app/lib/definitions'; 
-import { updatePlan, createCicle, deleteCicle } from '@/app/lib/actions';
+import { Cicle, Session } from '@/app/lib/definitions'; 
+import { updateCicle, createSession, deleteSession, duplicateSession } from '@/app/lib/actions';
 import { useFormState } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/app/ui/button';
@@ -9,22 +9,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PlusIcon, TrashIcon, PencilIcon, Square2StackIcon } from '@heroicons/react/24/outline';
 
-export default function EditPlanForm({ plan }: { plan: Plan }){
+export default function EditCicleForm({ cicle }: { cicle: Cicle }){
   const initialState = { message: null, errors: {} };
-  const updatePlanWithId = updatePlan.bind(null, plan.id);
-  const [state, action] = useFormState(updatePlanWithId, initialState);
+  const updateCicleWithId = updateCicle.bind(null, cicle.id);
+  const [state, action] = useFormState(updateCicleWithId, initialState);
 
   const [isEditing, setIsEditing] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const result = await updatePlan(plan.id, initialState, formData);
+    const result = await updateCicle(cicle.id, initialState, formData);
     if (result.success) {
-      plan.name = result.plan.name;
-      plan.description = result.plan.description;
-      plan.image_url = result.plan.image_url;
+      cicle.name = result.cicle.name;
+      cicle.description = result.cicle.description;
+      cicle.image_url = result.cicle.image_url;
       setIsEditing(false);
+    }
+    else {
+      console.log(result);
     }
   }
 
@@ -43,37 +46,58 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
     // }
   }
 
-  const [addedCicles, setAddedCicles] = useState<Cicle[]>(plan.cicles || []);
+  const [addedSessions, setAddedSessions] = useState<Session[]>(cicle.sessions || []);
 
-  async function handleAddCicle() {
-    const newCicle : Cicle = {
+  async function handleAddSession() {
+    const newSession : Session = {
       id: '',
-      name: 'Ciclo ' + (addedCicles.length + 1),
+      name: 'Día ' + (addedSessions.length + 1),
       description: '',
-      position: addedCicles.length > 0 ? addedCicles[addedCicles.length - 1].position + 1 : 0,
-      plan_id: plan.id,
+      position: addedSessions.length > 0 ? addedSessions[addedSessions.length - 1].position + 1 : 0,
+      cicle_id: cicle.id,
+      plan_id: cicle.plan_id,
       image_url: '',
       video_url: '',
-      sessions: []
+      blocks: []
     };
-    const cicle_id = await createCicle(newCicle);
+    const session_id = await createSession(newSession);
 
-    newCicle.id = cicle_id;
-    setAddedCicles([...addedCicles, newCicle]);
+    newSession.id = session_id;
+    setAddedSessions([...addedSessions, newSession]);
   };
 
   const [deleteError, setDeleteError] = useState<string>('');
 
-  async function handleDeleteCicle(indexToRemove: number) {
-    const isConfirmed = window.confirm("¿Borrar este ciclo?");
+  async function handleDeleteSession(indexToRemove: number) {
+    const isConfirmed = window.confirm("¿Borrar esta sesión?");
     if (isConfirmed) {
-      const result =  await deleteCicle(addedCicles[indexToRemove].id);
+      const result =  await deleteSession(addedSessions[indexToRemove].id);
       if (result.success) {
-        setAddedCicles(addedCicles.filter((_, index) => index !== indexToRemove));
+        setAddedSessions(addedSessions.filter((_, index) => index !== indexToRemove));
       }
       else {
         setDeleteError(result.message || 'Error desconocido');
       }
+    }
+  };
+
+  async function handleDuplicateSession(index: number) {
+    const isConfirmed = window.confirm("¿Duplicar esta sesión?");
+    if (isConfirmed) {
+      const position = addedSessions.length > 0 ? addedSessions[addedSessions.length - 1].position + 1 : 0;
+      const result = await duplicateSession(addedSessions[index].id, position);
+      const newSession : Session = {
+        id: result.id,
+        name: result.name,
+        description: result.description,
+        position: result.position,
+        plan_id: result.plan_id,
+        cicle_id: result.cicle_id,
+        image_url: result.image_url,
+        video_url: result.video_url,
+        blocks: []
+      };
+      setAddedSessions([...addedSessions, newSession]);
     }
   };
 
@@ -83,9 +107,9 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | undefined>();
 
   useEffect(() => {
-    setPreviewImageUrl(plan.image_url);
-    setPreviewVideoUrl(plan.video_url);
-  }, [plan.image_url, plan.video_url]);
+    setPreviewImageUrl(cicle.image_url);
+    setPreviewVideoUrl(cicle.video_url);
+  }, [cicle.image_url, cicle.video_url]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,6 +129,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
     <div>
       { isEditing ? (
         <form onSubmit={handleSubmit}>
+          <input id="plan_id" name="plan_id" type="hidden" defaultValue={cicle.plan_id} />
 
           <div className="mb-4">
             <label htmlFor="name" className="mb-2 block text-sm">
@@ -115,7 +140,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
               name="name"
               type="text"
               placeholder="Ingresa un nombre"
-              defaultValue={plan.name}
+              defaultValue={cicle.name}
               className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
               aria-describedby="name-error"
             />
@@ -136,7 +161,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
               name="description"
               type="text"
               placeholder="Ingresa una descripción"
-              defaultValue={plan.description}
+              defaultValue={cicle.description}
               className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
               aria-describedby="description-error"
             />
@@ -193,7 +218,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
                 name="video_url"
                 type="text"
                 placeholder="Ingresa el enlace al video"
-                defaultValue={plan.video_url}
+                defaultValue={cicle.video_url}
                 className="w-full rounded-md border border-gray-200 text-sm placeholder:text-gray"
                 aria-describedby="video_url-error"
                 ref={videoUrlRef}
@@ -243,15 +268,15 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
         <div>
           <div className="flex flex-row">
             <div className="flex flex-col gap-4 w-full">
-            <div className="text-lg font-medium">{plan.name}</div>
-            <div className="text-sm">{plan.description || "(Sin descripción)"}</div>
+            <div className="text-lg font-medium">{cicle.name}</div>
+            <div className="text-sm">{cicle.description || "(Sin descripción)"}</div>
             <div className="flex flex-row gap-5 items-center">
               <div className="basis-1/2">
-                {plan.image_url ? (
+                {cicle.image_url ? (
                   <div className="relative w-full mx-auto">
                     <Image
-                      src={plan.image_url}
-                      alt="Imagen del plan"
+                      src={cicle.image_url}
+                      alt="Imagen del cicle"
                       layout="responsive"
                       width={16}
                       height={9} 
@@ -265,10 +290,10 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
                 )}
               </div>
               <div className="basis-1/2">
-                {plan.video_url ? ( 
+                {cicle.video_url ? ( 
                   <div className="text-center grow relative w-full max-w-[500px] mt-5 aspect-video">
                     <iframe 
-                      src={plan.video_url}
+                      src={cicle.video_url}
                       title="Preview"
                       className="absolute top-0 left-0 w-full h-full border-2 rounded-lg"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -299,40 +324,43 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
       <div className="mt-10">
         <div className="flex flex-row items-center">
           <label htmlFor="exercise" className="grow mb-2 block">
-            Ciclos
+            Sesiones
           </label>
           <div className="flex gap-4">
             <button type="button" 
               className="rounded-md border p-2 text-sm font-medium flex bg-black text-white transition-colors hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
-              onClick={handleAddCicle}
+              onClick={handleAddSession}
             >
-                <span>Agregar ciclo</span>
+                <span>Agregar sesion</span>
                 <PlusIcon className="h-5 ml-2" />
             </button>
           </div>
         </div>
         <div className="mt-4">
-          {addedCicles
-              .sort((a: Cicle, b: Cicle) => a.position - b.position)
-              .map((cicle, index) => (
+          {addedSessions
+              .sort((a: Session, b: Session) => a.position - b.position)
+              .map((session, index) => (
             <div key={index} className="mb-4 p-4 border rounded-md shadow-sm bg-white">
               <div className="flex flex-col">
                 <div className="flex flex-row">
-                  <div className="grow text-lg font-medium">{cicle.name}</div>
+                  <div className="grow text-lg font-medium">{session.name}</div>
                   <div className="flex flex-row gap-1 text-right mb-2">
                     <button title="Editar" className="rounded-md border p-2 hover:bg-gray-100">
-                      <Link href={`/dashboard/plans/${plan.id}/edit/cicles/${cicle.id}/edit`}>
+                      <Link href={`/dashboard/plans/${cicle.plan_id}/edit/sessions/${session.id}/edit`}>
                         <PencilIcon className="w-5" />
                       </Link>
                     </button>
+                    <button title="Duplicar" className="rounded-md border p-2 hover:bg-gray-100"
+                      onClick={() => handleDuplicateSession(index)} >
+                      <Square2StackIcon className="w-5" />
+                    </button>
                     <button title="Borrar" type="button" className="rounded-md border p-2 hover:bg-gray-100"
-                      onClick={() => handleDeleteCicle(index)} >
+                      onClick={() => handleDeleteSession(index)} >
                       <TrashIcon className="w-5" />
                     </button>
                   </div>
                 </div>
-                {/*<div className="text-sm text-gray-500 mt-[-15px] mb-[5px]">{0} sesiones</div>*/}
-                <div className="text-sm">{cicle.description}</div>
+                <div className="text-sm">{session.description}</div>
               </div>
             </div>
           ))}
@@ -344,17 +372,14 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
         </div>
       </div>
 
-      { addedCicles.length == 0 &&
+      { addedSessions.length == 0 &&
         <div className="mb-4 p-4 border rounded-md shadow-sm bg-white">
-          <p className="text-sm text-gray-500 text-center">No hay ciclos</p>
+          <p className="text-sm text-gray-500 text-center">No hay sesiones</p>
         </div>
       }
 
       <div className="mt-6 flex justify-center gap-4">
-        <Link target="_blank" href={`/plans/${plan.id}`} className="flex h-10 items-center rounded-lg bg-gray-500 px-4 text-sm font-medium text-white transition-colors">
-          Ver como usuario
-        </Link>
-        <Link href="/dashboard/plans/" className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
+        <Link href={`/dashboard/plans/${cicle.plan_id}/edit`} className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
           Volver
         </Link>
       </div>

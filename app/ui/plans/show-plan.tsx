@@ -1,8 +1,9 @@
 'use client';
 
-import { Plan, Session } from '@/app/lib/definitions';
+import { Plan, Cicle } from '@/app/lib/definitions';
 import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/app/ui/button';
+import { PlusIcon, TrashIcon, PencilIcon, ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -46,20 +47,20 @@ export default function ShowPlan({ plan }: { plan: Plan }){
       </div>
 
       <div className="mt-6">
-        { plan.sessions
-            .sort((a: Session, b: Session) => a.position - b.position)
-            .map((session, index) => (
+        { plan.cicles
+            .sort((a: Cicle, b: Cicle) => a.position - b.position)
+            .map((cicle, index) => (
           <div key={index} className="mb-4 border rounded-md shadow-sm bg-white">
-            <Link href={`/plans/${plan.id}/sessions/${session.id}`}>
+            <Link href={`/plans/${plan.id}/cicles/${cicle.id}`}>
               <div className="p-4 flex flex-row items-center hover:bg-gray-100 w-[100%]">
                 <div className="flex flex-col w-full text-center gap-1">
-                  <div className="text-lg font-bold">{session.name}</div>
-                  <div className="text-sm text-gray-400">{session.description}</div>
-                  {session.image_url && !imgError &&
+                  <div className="text-lg font-bold">{cicle.name}</div>
+                  <div className="text-sm text-gray-400">{cicle.description}</div>
+                  { cicle.image_url && !imgError &&
                     <div className="max-w-[500px] m-auto"> 
                       <div className="relative w-full mx-auto">
                         <Image
-                          src={session.image_url}
+                          src={cicle.image_url}
                           alt="Imagen del plan"
                           layout="responsive"
                           width={16}
@@ -77,12 +78,6 @@ export default function ShowPlan({ plan }: { plan: Plan }){
           </div>
         ))}
       </div>
-
-      { plan.sessions.length == 0 &&
-        <div className="mb-4 p-4 border rounded-md shadow-sm bg-white">
-          <p className="text-sm text-gray-500 text-center">No hay sesiones</p>
-        </div>
-      }
     </div>
   );
 }

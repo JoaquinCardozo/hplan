@@ -26,7 +26,11 @@ export default async function Page({ params }: { params: { planId: string, sessi
             href: `/dashboard/plans/${planId}/edit`,
           },
           {
-            label: 'Editar día',
+            label: 'Editar ciclo',
+            href: `/dashboard/plans/${planId}/edit/cicles/${session.cicle_id}/edit`,
+          },
+          {
+            label: 'Editar sesión',
             href: `/dashboard/plans/${plan.id}/edit/sessions/${sessionId}/edit`,
             active: true,
           },

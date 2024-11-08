@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { sql, db } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type { User, Gym, Session, SessionBlock } from '@/app/lib/definitions';
+import type { User, Gym, Session, SessionBlock, Cicle } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 // import { put } from '@vercel/blob';
@@ -756,7 +756,7 @@ export async function deletePlan(id: string) {
   return { success: true };
 }
 
-const SessionFormSchema = z.object({
+const CicleFormSchema = z.object({
   id: z.string(),
   name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
   description: z.string().nullable(),
@@ -764,6 +764,136 @@ const SessionFormSchema = z.object({
   image: z.instanceof(File).nullable(),
   video_url: z.string().nullable(),
   plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' })
+});
+const CreateCicleFormSchema = CicleFormSchema.omit({ id: true });
+
+export async function createCicle(cicle: Cicle) {
+  const validatedFields = CreateCicleFormSchema.safeParse({
+    name: cicle.name,
+    description: cicle.description,
+    position: cicle.position,
+    image: null,
+    video_url: cicle.video_url,
+    plan_id: cicle.plan_id
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Create Cicle.',
+    };
+  } 
+  const { name, plan_id, position } = validatedFields.data;
+  let id;
+
+  try {
+    const result = await sql`
+      INSERT INTO cicles (plan_id, name, position)
+      VALUES (${plan_id}, ${name}, ${position})
+      RETURNING id
+    `;
+
+    revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+
+    id = result.rows[0].id;
+    return id;
+
+  } catch (error){
+    console.log(error);
+    return { message: 'Database Error: Failed to Create Cicle' };
+  }
+}
+
+export async function deleteCicle(id: string) {
+  const client = await db.connect();
+  try {
+    await client.sql`BEGIN`;
+
+    // TODO delete every child?
+    const result = await client.sql`
+      SELECT plan_id
+      FROM cicles
+      WHERE id = ${id}
+    `;
+    const plan_id = result.rows[0].plan_id;
+
+    await client.sql`
+      DELETE FROM cicles 
+      WHERE id = ${id}
+    `;
+
+    await client.sql`COMMIT`;
+
+    revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+    return { success: true };
+
+  } catch (error){
+    await client.sql`ROLLBACK`;
+
+    console.log(error);
+    return { success: false,  message: 'Error al borrar el ciclo'};
+  }
+}
+
+export async function updateCicle(id: string, prevState: CreatePlanState, formData: FormData) {
+  const validatedFields = CreateCicleFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    position: formData.get('position'),
+    plan_id: formData.get('plan_id'),
+    image: formData.get('image'),
+    video_url: formData.get('video_url')
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to Update Cicle.',
+    };
+  } 
+
+  let { name, description, position, plan_id, image, video_url } = validatedFields.data;
+  if (video_url) {
+    video_url = 'https://www.youtube.com/embed/' + video_url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+  }
+
+  let image_url = "";
+  if (image && image.size && image.size > 0) {
+    // Vercel Blob
+    // const blob = await put("exercise_images/" + image.name, image, {
+    //   access: 'public',
+    // });
+    // image_url = blob.url;
+   
+    // AWS s3
+    image_url = await uploadImage(image, 'cicle_images', name);
+  }
+  let result;
+
+  try {
+    result = await sql`
+      UPDATE cicles
+      SET name = ${name}, description = ${description}, position = ${position}, image_url = ${image_url}, video_url = ${video_url}
+      WHERE id = ${id}
+      RETURNING name, description, position, image_url
+    `;
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Cicle.' };
+  }
+
+  revalidatePath(`/dashboard/plans/${plan_id}/edit/cicles/${id}/edit`);
+  return { success: true, message: 'Cicle Edited.', cicle: result.rows[0] };
+}
+
+const SessionFormSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: 'Debes ingresar un nombre.' }),
+  description: z.string().nullable(),
+  position: z.coerce.number(),
+  image: z.instanceof(File).nullable(),
+  video_url: z.string().nullable(),
+  plan_id: z.string().min(1, { message: 'Plan id es obligatorio.' }),
+  cicle_id: z.string().min(1, { message: 'Cicle id es obligatorio.' })
 });
 const CreateSessionFormSchema = SessionFormSchema.omit({ id: true });
 
@@ -774,7 +904,8 @@ export async function createSession(session: Session) {
     position: session.position,
     image: null,
     video_url: session.video_url,
-    plan_id: session.plan_id
+    plan_id: session.plan_id,
+    cicle_id: session.cicle_id
   });
  
   if (!validatedFields.success) {
@@ -783,17 +914,17 @@ export async function createSession(session: Session) {
       message: 'Failed to Create Session.',
     };
   } 
-  const { name, plan_id, position } = validatedFields.data;
+  const { name, plan_id, cicle_id, position } = validatedFields.data;
   let id;
 
   try {
     const result = await sql`
-      INSERT INTO sessions (plan_id, name, position)
-      VALUES (${plan_id}, ${name}, ${position})
+      INSERT INTO sessions (plan_id, cicle_id, name, position)
+      VALUES (${plan_id}, ${cicle_id}, ${name}, ${position})
       RETURNING id
     `;
 
-    revalidatePath('/dashboard/plans/' + plan_id + '/edit');
+    revalidatePath('/dashboard/plans/' + plan_id + '/edit/cicles/' + cicle_id + '/edit');
 
     id = result.rows[0].id;
     return id;
@@ -812,16 +943,16 @@ export async function duplicateSession(original_session_id: string, position: nu
 
     // Duplicar la sesión
     const originalSession = await client.sql`
-      SELECT plan_id, name, description, image_url, video_url FROM sessions
+      SELECT plan_id, cicle_id, name, description, image_url, video_url FROM sessions
       WHERE id = ${original_session_id}
     `;
     if (!originalSession.rows.length) throw new Error("La sesión original no existe.");
 
-    const { plan_id, name, description, image_url, video_url } = originalSession.rows[0];
+    const { plan_id, cicle_id, name, description, image_url, video_url } = originalSession.rows[0];
 
     const newSession = await client.sql`
-      INSERT INTO sessions (plan_id, name, description, image_url, video_url, position)
-      VALUES (${plan_id}, ${name}, ${description}, ${image_url}, ${video_url}, ${position})
+      INSERT INTO sessions (plan_id, cicle_id, name, description, image_url, video_url, position)
+      VALUES (${plan_id}, ${cicle_id}, ${name}, ${description}, ${image_url}, ${video_url}, ${position})
       RETURNING id, name, description, position, image_url, video_url, plan_id
     `;
     const new_session_id = newSession.rows[0].id;
@@ -960,6 +1091,7 @@ export async function updateSession(id: string, prevState: CreatePlanState, form
     description: formData.get('description'),
     position: formData.get('position'),
     plan_id: formData.get('plan_id'),
+    cicle_id: formData.get('cicle_id'),
     image: formData.get('image'),
     video_url: formData.get('video_url')
   });

@@ -68,6 +68,17 @@ export type Plan = {
   description: string;
   image_url: string;
   video_url: string;
+  cicles: Cicle[];
+}
+
+export type Cicle = {
+  id: string;
+  name: string;
+  description: string;
+  plan_id: string;
+  position: number;
+  image_url: string;
+  video_url: string;
   sessions: Session[];
 }
 
@@ -76,6 +87,7 @@ export type Session = {
   name: string;
   description: string;
   plan_id: string;
+  cicle_id: string; // TODO update every function 
   position: number;
   image_url: string;
   video_url: string;
