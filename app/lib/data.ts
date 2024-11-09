@@ -374,6 +374,7 @@ export async function fetchPlanById(id: string) {
         cicles.id AS cicle_id,
         cicles.name AS cicle_name,
         cicles.description AS cicle_description,
+        cicles.position AS cicle_position,
         cicles.image_url AS cicle_image_url,
         cicles.video_url AS cicle_video_url
       FROM plans
@@ -410,6 +411,7 @@ export async function fetchPlanById(id: string) {
             id: row.cicle_id,
             name: row.cicle_name,
             description: row.cicle_description,
+            position: row.cicle_position,
             image_url: row.cicle_image_url,
             video_url: row.cicle_video_url,
             plan_id: row.id,

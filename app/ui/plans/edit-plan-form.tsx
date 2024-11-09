@@ -57,7 +57,7 @@ export default function EditPlanForm({ plan }: { plan: Plan }){
       sessions: []
     };
     const cicle_id = await createCicle(newCicle);
-
+    
     newCicle.id = cicle_id;
     setAddedCicles([...addedCicles, newCicle]);
   };
