@@ -90,6 +90,7 @@ export default function EditSessionForm({ session, exerciseNames }: { session: S
     		<form onSubmit={handleSubmit}>
     	
 		    	<input id="plan_id" name="plan_id" type="hidden" defaultValue={session.plan_id} />
+          <input id="cicle_id" name="cicle_id" type="hidden" defaultValue={session.cicle_id} />
 		    	<input id="position" name="position" type="hidden" defaultValue={session.position} />
 		      <div className="mb-4">
 		        <label htmlFor="name" className="mb-2 block text-sm">
