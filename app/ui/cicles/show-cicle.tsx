@@ -12,7 +12,7 @@ export default function ShowCicle({ cicle }: { cicle: Cicle }){
 	return (
 		<div>
     	<div>
-    		<div className="flex flex-col items-center text-center">
+    		<div className="flex flex-col gap-4 items-center text-center">
           <div className="grow text-2xl font-bold">{cicle.name}</div>
           <div className="grow text-sm text-gray-400">{cicle.description || "(Sin descripción)"}</div>
           
@@ -78,11 +78,11 @@ export default function ShowCicle({ cicle }: { cicle: Cicle }){
             </div>
           ))}
 
-          { cicle.sessions.length == 0 &&
+          {/*{ cicle.sessions.length == 0 &&
             <div className="mb-4 p-4 border rounded-md shadow-sm bg-white">
               <p className="text-sm text-gray-500 text-center">No hay sesiones</p>
             </div>
-          }
+          }*/}
         </div>
       </div>
 

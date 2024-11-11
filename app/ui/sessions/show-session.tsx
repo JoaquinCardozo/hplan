@@ -13,7 +13,7 @@ export default function ShowSession({ session }: { session: Session }){
 	return (
 		<div>
     	<div>
-    		<div className="flex flex-col items-center text-center">
+    		<div className="flex flex-col gap-4 items-center text-center">
           <div className="grow text-2xl font-bold">{session.name}</div>
           <div className="grow text-sm text-gray-400">{session.description || "(Sin descripción)"}</div>
           

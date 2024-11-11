@@ -166,20 +166,17 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                 .sort((a: SessionBlockWorkout, b: SessionBlockWorkout) => a.position - b.position)
                 .map((workout, index) => (
               <div key={index} className="relative p-4 border rounded-md shadow-sm bg-white">
-                <div className="font-bold text-lg">{workout.workout_type || "Circuito nuevo"}</div>
+                <div className="font-bold text-xl text-center">{workout.workout_type || "Circuito nuevo"}</div>
                 <div className="text-sm text-gray-400">{workout.description}</div>
 
-                <div className="flex flex-col sm:gap-2 smx:gap-4">
+                <div className="flex flex-col sm:gap-5 smx:gap-5">
                 { workout.exercises?.sort((a: WorkoutExercise, b: WorkoutExercise) => a.position - b.position)
                     .map((exercise : WorkoutExercise) => (
-                  <div key={workout.id + exercise.position + exercise.exercise_id}>
+                  <div key={workout.id + exercise.position + exercise.exercise_id} className="flex flex-col gap-4 pt-2 border-t-[1px]">
                     <div className="flex flex-row smx:flex-col justify-between sm:items-center gap-2">
                       <div className="flex flex-col">
-                        <div className="flex-grow flex gap-2">
-                          <div>{exercise.reps}</div>
-                          <div>{exercise.name}</div>
-                          { exercise.weight && <div>{exercise.weight}</div> }
-                        </div>
+                        <div className="font-semibold text-lg smx:text-center">{exercise.reps} {exercise.name}</div>
+
                         <div className="smx:hidden">
                           { exercise.description &&
                             <div className="mt-2 text-sm text-gray-400">{exercise.description}</div>
@@ -187,9 +184,9 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                         </div>
                       </div>
                       <div className="flex flex-row items-center">
-                        <div>
+                        <div className="grow m-auto">
                           {exercise.image_url && !exercisesInvalidImage[exercise.exercise_id] ? (
-                            <div>
+                            <div className="grow">
                               <div className="relative sm:w-[200px] smx:w-[150px] aspect-video">
                                 <Image
                                   src={exercise.image_url}
@@ -236,32 +233,34 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
 
                         {isImageModalOpen && (
                           <div
-                            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50"
+                            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
                             onClick={closeImageModal}
                           >
-                            <div className="relative max-w-3xl w-full smx:p-3 smx:pb-5 sm:p-10 flex flex-col gap-5 rounded-lg border-2 bg-white">
+                            <div className="relative max-w-3xl w-full sm:m-10 smx:m-2 smx:p-3 smx:pb-5 sm:p-10 flex flex-col gap-5 rounded-lg border-2 bg-white">
                               <div className="text-center text-xl font-bold text-black sm:text-center">{selectedName}</div>
                               <div className="text-gray-600 sm:text-center">{selectedDescription}</div>
-                              <div className="text-gray-600 sm:text-center">{selectedNotes}</div>
+                              {/*<div className="text-gray-600 sm:text-center">{selectedNotes}</div>*/}
 
-                              <div className="relative aspect-[16/9] w-full" onClick={(e) => e.stopPropagation()} >
-                                <Image
-                                  src={selectedImage}
-                                  alt="Imagen de ejercicio"
-                                  fill
-                                  className="object-cover rounded-lg"
-                                />
+                              <div className="w-full">
+                                <div className="relative aspect-[16/9] max-w-[300px] mx-auto" onClick={(e) => e.stopPropagation()} >
+                                  <Image
+                                    src={selectedImage}
+                                    alt="Imagen de ejercicio"
+                                    fill
+                                    className="object-cover rounded-lg"
+                                  />
+                                </div>
                               </div>
 
                               {selectedVideo && (
                                 <div  className="relative aspect-[16/9] w-full h-full" onClick={(e) => e.stopPropagation()} >
-                                    <iframe 
-                                      src={selectedVideo}
-                                      title="Preview"
-                                      className="mt-2 border-2 w-full h-full rounded-lg"
-                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                      allowFullScreen
-                                    />
+                                  <iframe 
+                                    src={selectedVideo}
+                                    title="Preview"
+                                    className="mt-2 border-2 w-full h-full rounded-lg"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowFullScreen
+                                  />
                                 </div>
                               )}
                             </div>
@@ -275,23 +274,26 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                         </div>
                       </div>
                     </div>
+                    
                     { exercise.notes &&
                       <div className="ml-2 mt-1 text-sm text-gray-400">{exercise.notes}</div>
                     }
-                    { exercise.rest &&
-                      <div className="ml-2 mt-1 mt-2">{exercise.rest}</div>
-                    }
+
+                    <div className="flex flex-row gap-2 items-center text-center">
+                      { exercise.weight && <div className="grow border rounded-md ">{exercise.weight}</div> }
+                      { exercise.rest && <div className="grow border rounded-md ">{exercise.rest}</div> }
+                    </div>
                   </div>
                 ))}
                 </div>
               </div>
             ))}
           </div>
-          { addedWorkouts.length == 0 &&
+          {/*{ addedWorkouts.length == 0 &&
             <div className="mb-4 p-4 border rounded-md shadow-sm bg-white">
               <p className="text-sm text-gray-500 text-center">No hay circuitos</p>
             </div>
-          }
+          }*/}
         </div>
       }
       </div>
