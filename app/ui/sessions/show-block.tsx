@@ -279,7 +279,7 @@ export default function ShowBlock({ block, plan_id }: { block: SessionBlock, pla
                       <div className="ml-2 mt-1 text-sm text-gray-400">{exercise.notes}</div>
                     }
                     { exercise.rest &&
-                      <div className="ml-2 mt-1 mt-2">Descanso: {exercise.rest}</div>
+                      <div className="ml-2 mt-1 mt-2">{exercise.rest}</div>
                     }
                   </div>
                 ))}
