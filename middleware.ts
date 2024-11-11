@@ -7,13 +7,12 @@ export function middleware(request: NextRequest) {
 
   if (sessionData){
     if (request.nextUrl.pathname == '/' || 
-        request.nextUrl.pathname.startsWith('/login') ||
-        request.nextUrl.pathname.startsWith('/register')) {
+        request.nextUrl.pathname.startsWith('/login')) {
       return Response.redirect(new URL('/dashboard', request.url))
     }
   }
   else {
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    if (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/register')) {
       return Response.redirect(new URL('/login', request.url))
     }
   }
