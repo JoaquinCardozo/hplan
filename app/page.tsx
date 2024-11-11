@@ -7,12 +7,12 @@ export default function Page() {
   return (
     <div className="flex flex-col p-6 pt-10">
       <div className="items-center flex flex-col justify-center gap-6">
-        <Link
+        {/*<Link
           href="/login"
           className="flex items-center gap-5 rounded-lg bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-black md:text-base"
         >
           <span>Iniciar sesión</span> <ArrowRightIcon className="w-5 md:w-6" />
-        </Link>
+        </Link>*/}
         {/*<Link
           href="/register/newgym"
           className="flex items-center gap-5 rounded-lg bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-black md:text-base"
