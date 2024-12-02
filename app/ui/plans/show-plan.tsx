@@ -51,7 +51,7 @@ export default function ShowPlan({ plan }: { plan: Plan }){
             .sort((a: Cicle, b: Cicle) => a.position - b.position)
             .map((cicle, index) => (
           <div key={index} className="mb-4 border rounded-md shadow-sm bg-white">
-            <Link href={index == 0 ? `/plans/${plan.id}/cicles/${cicle.id}` : '#'}>
+            <Link href={index <= 1  ? `/plans/${plan.id}/cicles/${cicle.id}` : '#'}>
               <div className="p-4 flex flex-row items-center hover:bg-gray-100 w-[100%]">
                 <div className="flex flex-col w-full text-center gap-1">
                   <div className="text-lg font-bold">{cicle.name}</div>
